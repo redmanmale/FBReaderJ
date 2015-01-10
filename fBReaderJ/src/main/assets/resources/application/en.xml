@@ -19,8 +19,13 @@
 		</node>
 		<node name="statistics" value="Reading Statistics">
 			<node name="summary" value="Track your reading statistics"/>
+			<node name="progressTitle" value="In Progress"/>
+			<node name="completedTitle" value="Completed"/>
+			<node name="readingTimesTitle" value="Reading Times"/>
+			<node name="averageTitle" value="On Average"/>
+			<node name="libraryTitle" value="In My Library"/>
 		</node>
-        <node name="recent" value="Recent">
+		<node name="recent" value="Recent">
 			<node name="summary" value="Recently opened books"/>
 		</node>
 		<node name="favorites" value="Favourites">

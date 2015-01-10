@@ -24,6 +24,12 @@ public class StatisticsListTree extends FirstLevelTree {
 		super(root, ROOT_STATISTICS);
 	}
 
+	public static final String PROGRESS_TITLE = "progressTitle";
+	public static final String COMPLETED_TITLE = "completedTitle";
+	public static final String READING_TIMES_TITLE = "readingTimesTitle";
+	public static final String AVERAGE_TITLE = "averageTitle";
+	public static final String LIBRARY_TITLE = "libraryTitle";
+
 	@Override
 	public Status getOpeningStatus() {
 		return Status.ALWAYS_RELOAD_BEFORE_OPENING;
@@ -32,8 +38,11 @@ public class StatisticsListTree extends FirstLevelTree {
 	@Override
 	public void waitForOpening() {
 		clear();
-		for (int i = 0; i < 3; i++) {
-			new StatisticsTree(this, "test title: " + i, "test entry: " + i);
-		}
+
+		new StatisticsTree(this, PROGRESS_TITLE, "PROGRESS_TITLE");
+		new StatisticsTree(this, COMPLETED_TITLE, "COMPLETED_TITLE");
+		new StatisticsTree(this, READING_TIMES_TITLE, "READING_TIMES_TITLE");
+		new StatisticsTree(this, AVERAGE_TITLE, "AVERAGE_TITLE");
+		new StatisticsTree(this, LIBRARY_TITLE, "LIBRARY_TITLE");
 	}
 }
