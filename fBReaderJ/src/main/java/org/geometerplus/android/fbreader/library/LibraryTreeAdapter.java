@@ -44,6 +44,12 @@ class LibraryTreeAdapter extends TreeAdapter {
 	}
 
 	private View createView(View convertView, ViewGroup parent, LibraryTree tree) {
+		if(tree.hasUniqueView) {
+			View createdView = tree.createUniqueView(convertView, parent, tree);
+			//assert createdView != null : "Unique views must implement LibraryTree.createUniqueView()";
+			return createdView;
+		}
+
 		final View view = (convertView != null) ? convertView :
 			LayoutInflater.from(parent.getContext()).inflate(R.layout.library_tree_item, parent, false);
 

@@ -19,6 +19,10 @@
 
 package org.geometerplus.fbreader.library;
 
+import android.text.Html;
+
+import org.geometerplus.fbreader.book.Book;
+
 public class StatisticsListTree extends FirstLevelTree {
 	StatisticsListTree(RootTree root) {
 		super(root, ROOT_STATISTICS);
@@ -38,8 +42,13 @@ public class StatisticsListTree extends FirstLevelTree {
 	@Override
 	public void waitForOpening() {
 		clear();
-
-		new StatisticsTree(this, PROGRESS_TITLE, "PROGRESS_TITLE");
+		Book mostRecentBook = Collection.getRecentBook(0);
+		String summary = "Start reading!";
+		if(mostRecentBook != null) {
+			int percentRead = (int)(mostRecentBook.getProgress().toFloat() * 100);
+			summary = Html.fromHtml("<b><b><b>" + mostRecentBook.getTitle() + "<b>\n\t\t\t%" + percentRead).toString();
+		}
+		new StatisticsTree(this, PROGRESS_TITLE, summary);
 		new StatisticsTree(this, COMPLETED_TITLE, "COMPLETED_TITLE");
 		new StatisticsTree(this, READING_TIMES_TITLE, "READING_TIMES_TITLE");
 		new StatisticsTree(this, AVERAGE_TITLE, "AVERAGE_TITLE");
