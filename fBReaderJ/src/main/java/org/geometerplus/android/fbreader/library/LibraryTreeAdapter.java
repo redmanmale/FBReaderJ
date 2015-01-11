@@ -44,13 +44,12 @@ class LibraryTreeAdapter extends TreeAdapter {
 	}
 
 	private View createView(View convertView, ViewGroup parent, LibraryTree tree) {
-		if(tree.hasUniqueView) {
-			View createdView = tree.createUniqueView(convertView, parent, tree);
-			//assert createdView != null : "Unique views must implement LibraryTree.createUniqueView()";
-			return createdView;
+		if(tree.hasUniqueView()) {
+			return tree.createUniqueView(convertView, parent, tree, getActivity());
 		}
 
-		final View view = (convertView != null) ? convertView :
+		// TODO: generalize check for non-unique views & neaten this up
+		final View view = (convertView != null && convertView.getId() != R.id.statistics_tree_id) ? convertView :
 			LayoutInflater.from(parent.getContext()).inflate(R.layout.library_tree_item, parent, false);
 
 		final boolean unread =
@@ -75,6 +74,10 @@ class LibraryTreeAdapter extends TreeAdapter {
 
 	public View getView(int position, View convertView, final ViewGroup parent) {
 		final LibraryTree tree = (LibraryTree)getItem(position);
+		if(tree.hasUniqueView()) {
+			return tree.createUniqueView(convertView, parent, tree, getActivity());
+		}
+
 		final View view = createView(convertView, parent, tree);
 		if (getActivity().isTreeSelected(tree)) {
 			view.setBackgroundColor(0xff555555);
@@ -101,6 +104,9 @@ class LibraryTreeAdapter extends TreeAdapter {
 	private int getCoverResourceId(LibraryTree tree) {
 		if (tree.getBook() != null) {
 			return R.drawable.ic_list_library_book;
+		} else if (tree instanceof StatisticsListTree) {
+			// TODO: add new drawable?
+			return R.drawable.ic_list_library_tags;
 		} else if (tree instanceof FavoritesTree) {
 			return R.drawable.ic_list_library_favorites;
 		} else if (tree instanceof RecentBooksTree || tree instanceof SyncTree) {

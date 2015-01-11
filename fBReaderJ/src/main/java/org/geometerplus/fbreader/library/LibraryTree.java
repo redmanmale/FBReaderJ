@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 
 import java.util.*;
 
+import org.geometerplus.android.fbreader.tree.TreeActivity;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
 import org.geometerplus.fbreader.book.*;
@@ -62,8 +63,8 @@ public abstract class LibraryTree extends FBTree {
 		Collection = parent.Collection;
 	}
 
-	public boolean hasUniqueView = false;
-	public View createUniqueView(View convertView, ViewGroup parent, LibraryTree tree) { return null; }
+	public boolean hasUniqueView() { return false; }
+	public View createUniqueView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) { return null; }
 
 	public Book getBook() {
 		return null;

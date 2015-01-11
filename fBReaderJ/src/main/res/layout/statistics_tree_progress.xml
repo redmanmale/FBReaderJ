@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/statistics_tree_id"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:minHeight="?android:attr/listPreferredItemHeight"
+	android:padding="5dp">
+
+	<TextView
+		android:id="@+id/statistics_tree_item_name"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:gravity="center"
+		android:layout_marginTop="-4dp"
+		android:layout_marginBottom="4dp"/>
+
+	<ImageView
+		android:id="@+id/statistics_tree_item_cover"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@+id/statistics_tree_item_name"
+		android:layout_alignParentLeft="true"/>
+
+	<TextView
+		android:id="@+id/statistics_tree_item_summary"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:layout_below="@+id/statistics_tree_item_name"
+		android:layout_toRightOf="@+id/statistics_tree_item_cover"
+		android:layout_toLeftOf="@+id/statistics_tree_item_right"
+		android:gravity="center"/>
+
+	<TextView
+		android:id="@+id/statistics_tree_item_right"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:layout_alignParentRight="true"
+		android:layout_below="@+id/statistics_tree_item_name"
+		android:layout_marginTop="-6dp"
+		android:gravity="center"/>
+
+	<ProgressBar
+		android:id="@+id/statistics_tree_item_progress"
+		style="?android:attr/progressBarStyleHorizontal"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignBottom="@+id/statistics_tree_item_summary"
+		android:layout_alignRight="@+id/statistics_tree_item_summary"
+		android:layout_toRightOf="@+id/statistics_tree_item_cover"
+		android:layout_toLeftOf="@+id/statistics_tree_item_right"
+		android:layout_margin="15dp"/>
+</RelativeLayout>

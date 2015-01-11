@@ -19,15 +19,18 @@
 
 package org.geometerplus.fbreader.library;
 
-import android.graphics.Typeface;
 import android.text.SpannableString;
-import android.text.style.StyleSpan;
+import android.text.style.RelativeSizeSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.geometerplus.android.fbreader.covers.CoverManager;
+import org.geometerplus.android.fbreader.tree.TreeActivity;
 import org.geometerplus.android.util.ViewUtil;
 import org.geometerplus.zlibrary.core.image.ZLImage;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
@@ -35,32 +38,62 @@ import org.geometerplus.zlibrary.ui.android.R;
 import org.geometerplus.fbreader.book.*;
 import org.geometerplus.fbreader.tree.FBTree;
 
-//BookTree
-
 public class StatisticsTree extends LibraryTree {
+	private static CoverManager sharedCoverManager;
+
 	public static ZLResource resource() {
 		return ZLResource.resource("library").getResource(ROOT_STATISTICS);
 	}
 
+	// enums must have the same name as resource keys
+	public static enum Types { progress, completed, reading, average, library }
+	public final Types myType;
+
 	public final String entryTitle;
-	public final String entrySummary;
+	public final SpannableString entrySummary;
 	public final boolean isSelectable;
 
-	StatisticsTree(LibraryTree parent, String title, String summary, boolean selectable) {
-		super(parent);
-		hasUniqueView = true;
-		entryTitle = StatisticsTree.resource().getResource(title).getValue();
-		entrySummary = summary;
-		isSelectable = selectable;
-	}
+	public static Book mostRecentBook;
+	public static int mostRecentBookPercentRead;
 
-	StatisticsTree(LibraryTree parent, String title, String summary) {
-		this(parent, title, summary, false);
+	StatisticsTree(LibraryTree parent, Types type, boolean selectable) {
+		super(parent);
+
+		myType = type;
+		isSelectable = selectable;
+		entryTitle = StatisticsTree.resource().getResource(type.name()).getValue();
+
+		switch(myType) {
+			case progress: {
+				mostRecentBook = Collection.getRecentBook(0);
+				if(mostRecentBook != null) {
+					mostRecentBookPercentRead = (int)(mostRecentBook.getProgress().toFloat() * 100);
+					String recentBookTitle = mostRecentBook.getTitle();
+					// TODO: show all authors
+					entrySummary = new SpannableString(recentBookTitle + "\n" +
+							mostRecentBook.authors().get(0).DisplayName + "\n\n" +
+							mostRecentBookPercentRead + "% Completed");
+					entrySummary.setSpan(new RelativeSizeSpan(1.2f), 0, recentBookTitle.length(), 0);
+				} else {
+					entrySummary = new SpannableString("Start reading!");
+				}
+				break;
+			} case completed: {
+			} case reading: {
+			} case average: {
+			} case library: {
+			} default: {
+				entrySummary = new SpannableString("ERROR");
+			}
+		}
 	}
 
 	@Override
+	public boolean hasUniqueView() { return true; }
+
+	@Override
 	public Status getOpeningStatus() {
-		return isSelectable ? Status.READY_TO_OPEN : Status.WAIT_FOR_OPEN;
+		return isSelectable ? Status.ALWAYS_RELOAD_BEFORE_OPENING : Status.WAIT_FOR_OPEN;
 	}
 
 	@Override
@@ -68,49 +101,115 @@ public class StatisticsTree extends LibraryTree {
 		return entryTitle;
 	}
 
-	@Override
-	public String getSummary() {
+	// pseudo getSummary()
+	public SpannableString getSpannableSummary() {
 		return entrySummary;
 	}
 
+	// not used, see getSpannableSummary()
 	@Override
-	public Book getBook() {
-		return null;
-	}
+	public String getSummary() { return getSpannableSummary().toString(); }
+
+	@Override
+	public Book getBook() {	return mostRecentBook; }
+
+	@Override
+	public ZLImage createCover() { return BookUtil.getCover(mostRecentBook); }
 
 	@Override
 	protected String getStringId() {
-		Log.d("checkUsed", "getstringid");
-		return ROOT_STATISTICS + entryTitle;
+		return ROOT_STATISTICS + (mostRecentBook == null ? entryTitle : mostRecentBook.getTitle());
 	}
 
 	@Override
-	protected ZLImage createCover() {
-		Log.d("checkUsed", "createcover");
-		return null;
+	public View createUniqueView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+		switch(myType) {
+			case progress: {
+				return createProgressView(convertView, parent, tree, activity);
+			} case completed: {
+				return createCompletedView(convertView, parent, tree, activity);
+			} case reading: {
+				return createProgressView(convertView, parent, tree, activity);
+			} case average: {
+				return createProgressView(convertView, parent, tree, activity);
+			} case library: {
+				return createProgressView(convertView, parent, tree, activity);
+			} default: {
+				return createProgressView(convertView, parent, tree, activity);
+			}
+		}
 	}
 
-	@Override
-	public View createUniqueView(View convertView, ViewGroup parent, LibraryTree tree) {
-		final View view = (convertView != null) ? convertView :
-				LayoutInflater.from(parent.getContext()).inflate(R.layout.library_tree_item, parent, false);
+	private View createProgressView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
+				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_progress, parent, false);
+		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
+		view.setMinimumHeight(entryHeight);
 
-		final TextView nameView = ViewUtil.findTextView(view, R.id.library_tree_item_name);
+		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
 		nameView.setText(tree.getName());
 
-		final TextView summaryView = ViewUtil.findTextView(view, R.id.library_tree_item_childrenlist);
-		SpannableString test = new SpannableString(tree.getSummary());
-		test.setSpan(new StyleSpan(Typeface.BOLD), 0, 6, 0);
-		summaryView.setText(test);
+		final TextView summaryView = ViewUtil.findTextView(view, R.id.statistics_tree_item_summary);
+		summaryView.setText(getSpannableSummary());
+		view.measure(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		final int summaryHeight = summaryView.getMeasuredHeight();
 
+		final TextView rightView = ViewUtil.findTextView(view, R.id.statistics_tree_item_right);
+		rightView.setText(new SpannableString("0\nHours Read\n\n22\nPages Turned"));
+
+		final ImageView coverView = ViewUtil.findImageView(view, R.id.statistics_tree_item_cover);
+		if (sharedCoverManager == null) {
+			Log.d("manager", "manager created from progress");
+			sharedCoverManager = new CoverManager(activity, activity.ImageSynchronizer, summaryHeight * 21 / 32, summaryHeight);
+			view.requestLayout();
+		}
+		if (!sharedCoverManager.trySetCoverImage(coverView, tree)) {
+			coverView.setImageResource(R.drawable.ic_list_library_book);
+		}
+
+		final ProgressBar bar = (ProgressBar)ViewUtil.findView(view, R.id.statistics_tree_item_progress);
+		bar.setProgress(mostRecentBookPercentRead);
 		return view;
 	}
+
+	private View createCompletedView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
+				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_progress, parent, false);
+		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
+		view.setMinimumHeight(entryHeight);
+
+		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
+		nameView.setText(tree.getName());
+
+		final TextView summaryView = ViewUtil.findTextView(view, R.id.statistics_tree_item_summary);
+		summaryView.setText(getSpannableSummary());
+		view.measure(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		final int summaryHeight = summaryView.getMeasuredHeight();
+
+		final TextView rightView = ViewUtil.findTextView(view, R.id.statistics_tree_item_right);
+		rightView.setText(new SpannableString("0\nHours Read\n\n22\nPages Turned"));
+
+		final ImageView coverView = ViewUtil.findImageView(view, R.id.statistics_tree_item_cover);
+		if (sharedCoverManager == null) {
+			Log.d("manager", "manager created from completed");
+			sharedCoverManager = new CoverManager(activity, activity.ImageSynchronizer, summaryHeight * 21 / 32, summaryHeight);
+			view.requestLayout();
+		}
+		if (!sharedCoverManager.trySetCoverImage(coverView, tree)) {
+			coverView.setImageResource(R.drawable.ic_list_library_book);
+		}
+
+		final ProgressBar bar = (ProgressBar)ViewUtil.findView(view, R.id.statistics_tree_item_progress);
+		bar.setProgress(mostRecentBookPercentRead);
+		return view;
+	}
+
 
 	// if statistics page contains mentioned book
 	@Override
 	public boolean containsBook(Book book) {
 		Log.d("checkUsed", "containsbook");
-		return false;
+		return book != null && book.equals(mostRecentBook);
 	}
 
 	// no need?
