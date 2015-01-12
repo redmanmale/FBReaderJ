@@ -38,6 +38,9 @@ import org.geometerplus.zlibrary.ui.android.R;
 import org.geometerplus.fbreader.book.*;
 import org.geometerplus.fbreader.tree.FBTree;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class StatisticsTree extends LibraryTree {
 	private static CoverManager sharedCoverManager;
 
@@ -48,14 +51,22 @@ public class StatisticsTree extends LibraryTree {
 	// enums must have the same name as resource keys
 	public static enum Types { progress, completed, reading, average, library }
 	public final Types myType;
-
 	public final String entryTitle;
-	public final SpannableString entrySummary;
 	public final boolean isSelectable;
 
+	// progress
 	public static Book mostRecentBook;
 	public static int mostRecentBookPercentRead;
-
+	public static SpannableString mostRecentBookSummary;
+	// completed
+	public final static Filter booksCompletedFilter = new Filter.ByLabel(Book.READ_LABEL);
+	public static List<Book> booksCompleted;
+	public static int numPagesTurned;
+	public static int hoursSpentTotal;
+	public static int percentLibraryCompleted;
+	//
+	public final static Filter booksFavoritedFilter = new Filter.ByLabel(Book.FAVORITE_LABEL);
+	public static List<Book> booksFavorited;
 	StatisticsTree(LibraryTree parent, Types type, boolean selectable) {
 		super(parent);
 
@@ -66,24 +77,42 @@ public class StatisticsTree extends LibraryTree {
 		switch(myType) {
 			case progress: {
 				mostRecentBook = Collection.getRecentBook(0);
+				Log.d("int", mostRecentBook.tags().toString());
 				if(mostRecentBook != null) {
 					mostRecentBookPercentRead = (int)(mostRecentBook.getProgress().toFloat() * 100);
 					String recentBookTitle = mostRecentBook.getTitle();
 					// TODO: show all authors
-					entrySummary = new SpannableString(recentBookTitle + "\n" +
+					mostRecentBookSummary = new SpannableString(recentBookTitle + "\n" +
 							mostRecentBook.authors().get(0).DisplayName + "\n\n" +
 							mostRecentBookPercentRead + "% Completed");
-					entrySummary.setSpan(new RelativeSizeSpan(1.2f), 0, recentBookTitle.length(), 0);
+					mostRecentBookSummary.setSpan(new RelativeSizeSpan(1.2f), 0, recentBookTitle.length(), 0);
 				} else {
-					entrySummary = new SpannableString("Start reading!");
+					mostRecentBookSummary = new SpannableString("Start reading!");
 				}
 				break;
 			} case completed: {
+				booksCompleted = new ArrayList<Book>();
+				for (BookQuery query = new BookQuery(booksCompletedFilter, 20); ; query = query.next()) {
+					final List<Book> books = Collection.books(query);
+					if (books.isEmpty()) {
+						break;
+					}
+					booksCompleted.addAll(books);
+				}
+				booksFavorited = new ArrayList<Book>();
+				for (BookQuery query = new BookQuery(booksFavoritedFilter, 20); ; query = query.next()) {
+					final List<Book> books = Collection.books(query);
+					if (books.isEmpty()) {
+						break;
+					}
+					booksFavorited.addAll(books);
+				}
+				Log.d("stats", "#completed: " + booksCompleted.size() + "  #favorited: " + booksFavorited.size());
+				break;
 			} case reading: {
 			} case average: {
 			} case library: {
 			} default: {
-				entrySummary = new SpannableString("ERROR");
 			}
 		}
 	}
@@ -103,7 +132,7 @@ public class StatisticsTree extends LibraryTree {
 
 	// pseudo getSummary()
 	public SpannableString getSpannableSummary() {
-		return entrySummary;
+		return mostRecentBookSummary;
 	}
 
 	// not used, see getSpannableSummary()
@@ -122,25 +151,25 @@ public class StatisticsTree extends LibraryTree {
 	}
 
 	@Override
-	public View createUniqueView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+	public View onCreateUniqueView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
 		switch(myType) {
 			case progress: {
-				return createProgressView(convertView, parent, tree, activity);
+				return createProgressStatisticsView(convertView, parent, tree, activity);
 			} case completed: {
-				return createCompletedView(convertView, parent, tree, activity);
+				return createCompletedStatisticsView(convertView, parent, tree, activity);
 			} case reading: {
-				return createProgressView(convertView, parent, tree, activity);
+				return createReadingStatisticsView(convertView, parent, tree, activity);
 			} case average: {
-				return createProgressView(convertView, parent, tree, activity);
+				return createAverageStatisticsView(convertView, parent, tree, activity);
 			} case library: {
-				return createProgressView(convertView, parent, tree, activity);
+				return createLibraryStatisticsView(convertView, parent, tree, activity);
 			} default: {
-				return createProgressView(convertView, parent, tree, activity);
+				return createProgressStatisticsView(convertView, parent, tree, activity);
 			}
 		}
 	}
 
-	private View createProgressView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+	private View createProgressStatisticsView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
 		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
 				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_progress, parent, false);
 		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
@@ -155,12 +184,15 @@ public class StatisticsTree extends LibraryTree {
 		final int summaryHeight = summaryView.getMeasuredHeight();
 
 		final TextView rightView = ViewUtil.findTextView(view, R.id.statistics_tree_item_right);
-		rightView.setText(new SpannableString("0\nHours Read\n\n22\nPages Turned"));
+		SpannableString rightText = new SpannableString("0\nHours Read\n\n22\nPages Turned");
+		rightText.setSpan(new RelativeSizeSpan(1.7f), 0, 1, 0);
+		rightText.setSpan(new RelativeSizeSpan(1.7f), 14, 16, 0);
+		rightView.setText(rightText);
 
 		final ImageView coverView = ViewUtil.findImageView(view, R.id.statistics_tree_item_cover);
 		if (sharedCoverManager == null) {
 			Log.d("manager", "manager created from progress");
-			sharedCoverManager = new CoverManager(activity, activity.ImageSynchronizer, summaryHeight * 21 / 32, summaryHeight);
+			sharedCoverManager = new CoverManager(activity, activity.ImageSynchronizer, summaryHeight * 21 / 32 *7/5, summaryHeight*7/5);
 			view.requestLayout();
 		}
 		if (!sharedCoverManager.trySetCoverImage(coverView, tree)) {
@@ -172,38 +204,53 @@ public class StatisticsTree extends LibraryTree {
 		return view;
 	}
 
-	private View createCompletedView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+	private View createCompletedStatisticsView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
 		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
-				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_progress, parent, false);
+				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_completed, parent, false);
 		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
 		view.setMinimumHeight(entryHeight);
 
 		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
 		nameView.setText(tree.getName());
 
-		final TextView summaryView = ViewUtil.findTextView(view, R.id.statistics_tree_item_summary);
-		summaryView.setText(getSpannableSummary());
-		view.measure(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		final int summaryHeight = summaryView.getMeasuredHeight();
-
-		final TextView rightView = ViewUtil.findTextView(view, R.id.statistics_tree_item_right);
-		rightView.setText(new SpannableString("0\nHours Read\n\n22\nPages Turned"));
-
-		final ImageView coverView = ViewUtil.findImageView(view, R.id.statistics_tree_item_cover);
-		if (sharedCoverManager == null) {
-			Log.d("manager", "manager created from completed");
-			sharedCoverManager = new CoverManager(activity, activity.ImageSynchronizer, summaryHeight * 21 / 32, summaryHeight);
-			view.requestLayout();
-		}
-		if (!sharedCoverManager.trySetCoverImage(coverView, tree)) {
-			coverView.setImageResource(R.drawable.ic_list_library_book);
-		}
-
-		final ProgressBar bar = (ProgressBar)ViewUtil.findView(view, R.id.statistics_tree_item_progress);
-		bar.setProgress(mostRecentBookPercentRead);
 		return view;
 	}
 
+	private View createReadingStatisticsView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
+				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_completed, parent, false);
+		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
+		view.setMinimumHeight(entryHeight);
+
+		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
+		nameView.setText(tree.getName());
+
+		return view;
+	}
+
+	private View createAverageStatisticsView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
+				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_average, parent, false);
+		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
+		view.setMinimumHeight(entryHeight);
+
+		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
+		nameView.setText(tree.getName());
+
+		return view;
+	}
+
+	private View createLibraryStatisticsView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
+				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_completed, parent, false);
+		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
+		view.setMinimumHeight(entryHeight);
+
+		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
+		nameView.setText(tree.getName());
+
+		return view;
+	}
 
 	// if statistics page contains mentioned book
 	@Override

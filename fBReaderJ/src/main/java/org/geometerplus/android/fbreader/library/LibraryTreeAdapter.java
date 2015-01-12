@@ -45,7 +45,7 @@ class LibraryTreeAdapter extends TreeAdapter {
 
 	private View createView(View convertView, ViewGroup parent, LibraryTree tree) {
 		if(tree.hasUniqueView()) {
-			return tree.createUniqueView(convertView, parent, tree, getActivity());
+			return tree.onCreateUniqueView(convertView, parent, tree, getActivity());
 		}
 
 		// TODO: generalize check for non-unique views & neaten this up
@@ -75,7 +75,7 @@ class LibraryTreeAdapter extends TreeAdapter {
 	public View getView(int position, View convertView, final ViewGroup parent) {
 		final LibraryTree tree = (LibraryTree)getItem(position);
 		if(tree.hasUniqueView()) {
-			return tree.createUniqueView(convertView, parent, tree, getActivity());
+			return tree.onCreateUniqueView(convertView, parent, tree, getActivity());
 		}
 
 		final View view = createView(convertView, parent, tree);

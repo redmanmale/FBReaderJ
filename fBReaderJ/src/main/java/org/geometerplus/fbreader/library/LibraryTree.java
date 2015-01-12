@@ -64,7 +64,7 @@ public abstract class LibraryTree extends FBTree {
 	}
 
 	public boolean hasUniqueView() { return false; }
-	public View createUniqueView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) { return null; }
+	public View onCreateUniqueView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) { return null; }
 
 	public Book getBook() {
 		return null;
