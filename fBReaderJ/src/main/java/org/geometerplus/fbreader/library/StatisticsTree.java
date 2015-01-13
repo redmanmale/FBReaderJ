@@ -53,6 +53,7 @@ public class StatisticsTree extends LibraryTree {
 	public final Types myType;
 	public final String entryTitle;
 	public final boolean isSelectable;
+	private final static float headingSize = 1.7f;
 
 	// progress
 	public static Book mostRecentBook;
@@ -185,8 +186,8 @@ public class StatisticsTree extends LibraryTree {
 
 		final TextView rightView = ViewUtil.findTextView(view, R.id.statistics_tree_item_right);
 		SpannableString rightText = new SpannableString("0\nHours Read\n\n22\nPages Turned");
-		rightText.setSpan(new RelativeSizeSpan(1.7f), 0, 1, 0);
-		rightText.setSpan(new RelativeSizeSpan(1.7f), 14, 16, 0);
+		rightText.setSpan(new RelativeSizeSpan(headingSize), 0, 1, 0);
+		rightText.setSpan(new RelativeSizeSpan(headingSize), 14, 16, 0);
 		rightView.setText(rightText);
 
 		final ImageView coverView = ViewUtil.findImageView(view, R.id.statistics_tree_item_cover);
@@ -212,6 +213,17 @@ public class StatisticsTree extends LibraryTree {
 
 		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
 		nameView.setText(tree.getName());
+
+		final TextView booksCompletedView = ViewUtil.findTextView(view, R.id.statistics_tree_books_completed);
+		SpannableString booksCompletedText = new SpannableString(booksCompleted.size() + "\n Books Completed");
+		booksCompletedText.setSpan(new RelativeSizeSpan(headingSize), 0, ("" + booksCompleted.size()).length(), 0);
+		booksCompletedView.setText(booksCompletedText);
+
+		final TextView pagesTurnedView = ViewUtil.findTextView(view, R.id.statistics_tree_pages_turned);
+		SpannableString pagesTurnedText = new SpannableString(booksCompleted.size() + "\n Pages Turned");
+		pagesTurnedText.setSpan(new RelativeSizeSpan(headingSize), 0, ("" + booksCompleted.size()).length(), 0);
+		pagesTurnedView.setText(pagesTurnedText);
+
 
 		return view;
 	}

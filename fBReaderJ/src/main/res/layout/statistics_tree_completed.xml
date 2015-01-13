@@ -16,49 +16,56 @@
 		android:layout_marginBottom="4dp"/>
 
 	<TextView
+		android:id="@+id/statistics_tree_books_completed"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:gravity="center"
 		android:text="Small Text"
-		android:id="@+id/textView"
 		android:layout_below="@+id/statistics_tree_item_name"
 		android:layout_alignParentLeft="true"/>
 
 	<TextView
+		android:id="@+id/statistics_tree_pages_turned"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:gravity="center"
 		android:text="Small Text"
-		android:id="@+id/textView2"
-		android:layout_below="@+id/textView"
-		android:layout_alignParentLeft="true"/>
+		android:layout_below="@+id/statistics_tree_books_completed"
+		android:layout_alignLeft="@+id/statistics_tree_books_completed"/>
 
 	<TextView
+		android:id="@+id/textView3"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:gravity="center"
 		android:text="Small Text"
-		android:id="@+id/textView3"
 		android:layout_below="@+id/statistics_tree_item_name"
 		android:layout_centerHorizontal="true"/>
 
 	<TextView
+		android:id="@+id/textView4"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:gravity="center"
 		android:text="Small Text"
-		android:id="@+id/textView4"
 		android:layout_centerHorizontal="true"
-		android:layout_below="@+id/textView3"/>
+		android:layout_below="@+id/textView3"
+		android:layout_alignLeft="@+id/textView3"/>
 
 	<TextView
+		android:id="@+id/textView5"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceLarge"
+		android:gravity="center"
 		android:text="Large Text"
-		android:id="@+id/textView5"
 		android:layout_alignRight="@+id/statistics_tree_item_name"
 		android:layout_below="@+id/statistics_tree_item_name"
-		android:layout_alignBottom="@+id/textView4"/>
+		android:layout_alignBottom="@+id/textView4"
+		/>
 
 </RelativeLayout>

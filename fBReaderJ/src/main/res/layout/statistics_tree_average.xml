@@ -20,7 +20,7 @@
 		android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceSmall"
 		android:text="Small Text"
-		android:id="@+id/textView"
+		android:id="@+id/statistics_tree_books_completed"
 		android:layout_below="@+id/statistics_tree_item_name"
 		android:layout_alignParentLeft="true"/>
 
@@ -29,8 +29,8 @@
 		android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceSmall"
 		android:text="Small Text"
-		android:id="@+id/textView2"
-		android:layout_below="@+id/textView"
+		android:id="@+id/statistics_tree_pages_turned"
+		android:layout_below="@+id/statistics_tree_books_completed"
 		android:layout_alignParentLeft="true"/>
 
 	<TextView
