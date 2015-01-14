@@ -215,13 +215,13 @@ public class StatisticsTree extends LibraryTree {
 		nameView.setText(tree.getName());
 
 		final TextView booksCompletedView = ViewUtil.findTextView(view, R.id.statistics_tree_books_completed);
-		SpannableString booksCompletedText = new SpannableString(booksCompleted.size() + "\n Books Completed");
+		SpannableString booksCompletedText = new SpannableString(booksCompleted.size() + "\nBooks Completed");
 		booksCompletedText.setSpan(new RelativeSizeSpan(headingSize), 0, ("" + booksCompleted.size()).length(), 0);
 		booksCompletedView.setText(booksCompletedText);
 
 		final TextView pagesTurnedView = ViewUtil.findTextView(view, R.id.statistics_tree_pages_turned);
-		SpannableString pagesTurnedText = new SpannableString(booksCompleted.size() + "\n Pages Turned");
-		pagesTurnedText.setSpan(new RelativeSizeSpan(headingSize), 0, ("" + booksCompleted.size()).length(), 0);
+		SpannableString pagesTurnedText = new SpannableString("\n" + booksCompleted.size() + "\nPages Turned");
+		pagesTurnedText.setSpan(new RelativeSizeSpan(headingSize), 1, ("" + booksCompleted.size()).length() + 1, 0);
 		pagesTurnedView.setText(pagesTurnedText);
 
 
