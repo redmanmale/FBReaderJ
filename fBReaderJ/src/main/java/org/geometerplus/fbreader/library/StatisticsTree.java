@@ -59,6 +59,8 @@ public class StatisticsTree extends LibraryTree {
 	public static Book mostRecentBook;
 	public static int mostRecentBookPercentRead;
 	public static SpannableString mostRecentBookSummary;
+	public static int mostRecentBookHoursRead;
+	public static int mostRecentBookPagesTurned;
 	// completed
 	public final static Filter booksCompletedFilter = new Filter.ByLabel(Book.READ_LABEL);
 	public static List<Book> booksCompleted;
@@ -185,9 +187,13 @@ public class StatisticsTree extends LibraryTree {
 		final int summaryHeight = summaryView.getMeasuredHeight();
 
 		final TextView rightView = ViewUtil.findTextView(view, R.id.statistics_tree_item_right);
-		SpannableString rightText = new SpannableString("0\nHours Read\n\n22\nPages Turned");
-		rightText.setSpan(new RelativeSizeSpan(headingSize), 0, 1, 0);
-		rightText.setSpan(new RelativeSizeSpan(headingSize), 14, 16, 0);
+		SpannableString rightText = new SpannableString(
+				mostRecentBookHoursRead + "\nHours Read\n\n" +
+				mostRecentBookPagesTurned + "\nPages Turned");
+		int str1Length = String.valueOf(mostRecentBookHoursRead).length();
+		int str2Length = String.valueOf(mostRecentBookPagesTurned).length();
+		rightText.setSpan(new RelativeSizeSpan(headingSize), 0, str1Length, 0);
+		rightText.setSpan(new RelativeSizeSpan(headingSize), 13 + str1Length, 13 + str1Length + str2Length, 0);
 		rightView.setText(rightText);
 
 		final ImageView coverView = ViewUtil.findImageView(view, R.id.statistics_tree_item_cover);
@@ -214,16 +220,15 @@ public class StatisticsTree extends LibraryTree {
 		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
 		nameView.setText(tree.getName());
 
-		final TextView booksCompletedView = ViewUtil.findTextView(view, R.id.statistics_tree_books_completed);
-		SpannableString booksCompletedText = new SpannableString(booksCompleted.size() + "\nBooks Completed");
-		booksCompletedText.setSpan(new RelativeSizeSpan(headingSize), 0, ("" + booksCompleted.size()).length(), 0);
-		booksCompletedView.setText(booksCompletedText);
-
-		final TextView pagesTurnedView = ViewUtil.findTextView(view, R.id.statistics_tree_pages_turned);
-		SpannableString pagesTurnedText = new SpannableString("\n" + booksCompleted.size() + "\nPages Turned");
-		pagesTurnedText.setSpan(new RelativeSizeSpan(headingSize), 1, ("" + booksCompleted.size()).length() + 1, 0);
-		pagesTurnedView.setText(pagesTurnedText);
-
+		final TextView leftPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_completed_left);
+		final int str1Length = String.valueOf(booksCompleted.size()).length();
+		final int str2Length = String.valueOf(booksCompleted.size()).length();
+		SpannableString leftPanelText = new SpannableString(
+				booksCompleted.size() + "\nBooks Completed\n\n" +
+				booksCompleted.size() + "\nPages Turned");
+		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, str1Length, 0);
+		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 18 + str1Length, 18 + str1Length + str2Length, 0);
+		leftPanelView.setText(leftPanelText);
 
 		return view;
 	}

@@ -13,14 +13,15 @@
 		android:textAppearance="?android:attr/textAppearanceSmall"
 		android:gravity="center"
 		android:layout_marginTop="-4dp"
-		android:layout_marginBottom="4dp"/>
+		android:layout_marginBottom="4dp"
+		android:textStyle="bold"/>
 
 	<TextView
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceSmall"
 		android:text="Small Text"
-		android:id="@+id/statistics_tree_books_completed"
+		android:id="@+id/statistics_tree_completed_left"
 		android:layout_below="@+id/statistics_tree_item_name"
 		android:layout_alignParentLeft="true"/>
 
@@ -30,7 +31,7 @@
 		android:textAppearance="?android:attr/textAppearanceSmall"
 		android:text="Small Text"
 		android:id="@+id/statistics_tree_pages_turned"
-		android:layout_below="@+id/statistics_tree_books_completed"
+		android:layout_below="@+id/statistics_tree_completed_left"
 		android:layout_alignParentLeft="true"/>
 
 	<TextView
