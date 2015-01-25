@@ -75,7 +75,7 @@ public class StatisticsTree extends LibraryTree {
 	public static List<Book> booksCompleted;
 	public final static Filter booksReadingFilter = new Filter.ByLabel(Book.READ_LABEL);
 	public static List<Book> booksReading;
-	public static List<String> seriesCompleted;
+	public static Map<String, List<Book>> seriesCompletionMap;
 	public static int totalPagesTurned;
 	public static int totalTimeSpent;
 	// average
@@ -130,18 +130,25 @@ public class StatisticsTree extends LibraryTree {
 					booksCompleted.addAll(books);
 				}
 
-				seriesCompleted = new ArrayList<String>();
-				Map<String, Integer> seriesCompletionMap = new HashMap<String, Integer>();
+				seriesCompletionMap = new HashMap<String, List<Book>>();
 				for (Book book : booksCompleted) {
 					final SeriesInfo seriesInfo = book.getSeriesInfo();
 					if (seriesInfo == null || seriesInfo.Series == null) {
 						continue;
 					}
 					final String title = seriesInfo.Series.getTitle();
-					final boolean in = seriesCompletionMap.containsKey(title);
-					seriesCompletionMap.put(title, in ? seriesCompletionMap.get(title) + 1 : new Integer(1));
+					if(seriesCompletionMap.containsKey(title)) {
+						seriesCompletionMap.get(title).add(book);
+						Log.d("check9", "Added book " + book.getTitle() + " into ArrayList at " + title);
+					} else {
+						Log.d("check9", "Created ArrayList for: " + title);
+						seriesCompletionMap.put(title, new ArrayList<Book>());
+						seriesCompletionMap.get(title).add(book);
+					}
 				}
+				final ArrayList<String> seriesToBeRemoved = new ArrayList<String>();
 				for (String title : seriesCompletionMap.keySet()) {
+					Log.d("check9", "On keySet title: " + title);
 					final Filter seriesFilter = new Filter.BySeries(new Series(title));
 					List<Book> allBooksInThisSeries = new ArrayList<Book>();
 					for (BookQuery query = new BookQuery(seriesFilter, 20); ; query = query.next()) {
@@ -151,9 +158,14 @@ public class StatisticsTree extends LibraryTree {
 						}
 						allBooksInThisSeries.addAll(books);
 					}
-					if (seriesCompletionMap.get(title) >= allBooksInThisSeries.size()) {
-						seriesCompleted.add(title);
+					if (seriesCompletionMap.get(title).size() < allBooksInThisSeries.size()) {
+						Log.d("check9", "Marked for deletion: " + title);
+						seriesToBeRemoved.add(title);
 					}
+				}
+				for (String seriesToRemove : seriesToBeRemoved) {
+					Log.d("check9", "Removed: " + seriesToRemove);
+					seriesCompletionMap.remove(seriesToRemove);
 				}
 
 				booksReading = new ArrayList<Book>();
@@ -316,7 +328,7 @@ public class StatisticsTree extends LibraryTree {
 
 		final TextView leftPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_completed_left);
 		final String lpStr1 = String.valueOf(booksCompleted.size());
-		final String lpStr2 = String.valueOf(seriesCompleted.size());
+		final String lpStr2 = String.valueOf(seriesCompletionMap.size());
 		final SpannableString leftPanelText = new SpannableString(
 				lpStr1 + "\nBooks\n\n" +
 				lpStr2 + "\nSeries");
