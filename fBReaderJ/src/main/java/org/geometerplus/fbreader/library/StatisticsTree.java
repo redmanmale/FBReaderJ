@@ -80,6 +80,7 @@ public class StatisticsTree extends LibraryTree {
 	public static int totalTimeSpent;
 	// average
 	public static int averageBookTimeSpent;
+	public static int averageSeriesTimeSpent;
 	public static int averagePagesPerHour;
 	// library
 	public static int numBooksInLibrary;
@@ -203,6 +204,16 @@ public class StatisticsTree extends LibraryTree {
 					averagePagesPerHour += book.getStatistics().getPagesTurned() / (hours == 0 ? 1 : hours);
 				}
 				averageBookTimeSpent /= booksReading.size();
+
+				averageSeriesTimeSpent = 0;
+				for (String title : seriesCompletionMap.keySet()) {
+					final List<Book> booksInSeries = seriesCompletionMap.get(title);
+					int currentSeriesTimeSpent = 0;
+					for (Book book : booksInSeries) {
+						currentSeriesTimeSpent += book.getStatistics().getTotalTimeSpent();
+					}
+					averageSeriesTimeSpent += currentSeriesTimeSpent / booksInSeries.size();
+				}
 			} case library: {
 				numSeriesInLibrary = Collection.series().size();
 				numAuthorsInLibrary = Collection.authors().size();
@@ -327,11 +338,12 @@ public class StatisticsTree extends LibraryTree {
 		nameView.setText(tree.getName());
 
 		final TextView leftPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_completed_left);
+		final int percent = (int)(RationalNumber.create(booksCompleted.size(), numBooksInLibrary).toFloat() * 100);
 		final String lpStr1 = String.valueOf(booksCompleted.size());
-		final String lpStr2 = String.valueOf(seriesCompletionMap.size());
+		final String lpStr2 = String.valueOf(percent) + "%";
 		final SpannableString leftPanelText = new SpannableString(
 				lpStr1 + "\nBooks\n\n" +
-				lpStr2 + "\nSeries");
+				lpStr2 + "\nOf Your Library");
 		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, lpStr1.length(), 0);
 		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 8 + lpStr1.length(), 8 + lpStr1.length() + lpStr2.length(), 0);
 		leftPanelView.setText(leftPanelText);
@@ -341,8 +353,6 @@ public class StatisticsTree extends LibraryTree {
 		final int minutes = temp % 60; temp /= 60;
 		final int hours = temp % 24; temp /= 24;
 		final int days = temp;
-		/*final Date timeSpent = new Date(totalTimeSpent);
-		final String cpStr1 = String.valueOf(String.format("%02d:%02d:%02d", timeSpent.getHours() / 24, timeSpent.getHours() % 24, timeSpent.getMinutes()));*/
 		final String cpStr1 = String.valueOf(String.format("%02d:%02d:%02d", days, hours, minutes));
 		final String cpStr2 = String.valueOf("");
 		final SpannableString centerPanelText = new SpannableString(
@@ -353,14 +363,13 @@ public class StatisticsTree extends LibraryTree {
 		centerPanelView.setText(centerPanelText);
 
 		final TextView rightPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_completed_right);
-		final int percent = (int)(RationalNumber.create(booksCompleted.size(), numBooksInLibrary).toFloat() * 100);
-		final String rpStr1 = String.valueOf(percent) + "%";
+		final String rpStr1 = String.valueOf(seriesCompletionMap.size());
 		final String rpStr2 = String.valueOf(totalPagesTurned);
 		final SpannableString rightPanelText = new SpannableString(
-				rpStr1 + "\nOf Your Library\n\n" + //18
+				rpStr1 + "\nSeries\n\n" + // 9
 				rpStr2 + "\nTotal Pages Turned");
 		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, rpStr1.length(), 0);
-		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 18 + rpStr1.length(), 18 + rpStr1.length() + rpStr2.length(), 0);
+		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 9 + rpStr1.length(), 9 + rpStr1.length() + rpStr2.length(), 0);
 		rightPanelView.setText(rightPanelText);
 
 		return view;
@@ -388,29 +397,43 @@ public class StatisticsTree extends LibraryTree {
 		nameView.setText(tree.getName());
 
 		final TextView leftPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_average_left);
-		final String lpStr1 = String.valueOf(averagePagesPerHour);
-		final String lpStr2 = String.valueOf(averagePagesPerHour);
-		final SpannableString leftPanelText = new SpannableString(
-				lpStr1 + "\nPages Per Hour\n\n" + // 17
-				lpStr2 + "\nPages Per Hour");
-		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, lpStr1.length(), 0);
-		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 17 + lpStr1.length(), 17 + lpStr1.length() + lpStr2.length(), 0);
-		leftPanelView.setText(leftPanelText);
-
-
-		final TextView centerPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_average_center);
 		int temp = averageBookTimeSpent / 1000;
 		final int seconds = temp % 60; temp /= 60;
 		final int minutes = temp % 60; temp /= 60;
 		final int hours = temp;
-		final String cpStr1 = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+		final String lpStr1 = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+		final String lpStr2 = String.valueOf("");
+		final SpannableString leftPanelText = new SpannableString(
+				lpStr1 + "\nTime Per Book\n(h:m:s)\n\n" + // 25
+				lpStr2 + "\n");
+		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, lpStr1.length(), 0);
+		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 25 + lpStr1.length(), 25 + lpStr1.length() + lpStr2.length(), 0);
+		leftPanelView.setText(leftPanelText);
+
+		final TextView centerPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_average_center);
+		final String cpStr1 = String.valueOf(averagePagesPerHour);
 		final String cpStr2 = String.valueOf("");
 		final SpannableString centerPanelText = new SpannableString(
-				cpStr1 + "\nTime Per Book\n(h:m:s)\n\n" + // 25
+				cpStr1 + "\nPages Per Hour\n\n" + // 17
 				cpStr2 + "\n");
 		centerPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, cpStr1.length(), 0);
-		centerPanelText.setSpan(new RelativeSizeSpan(headingSize), 25 + cpStr1.length(), 25 + cpStr1.length() + cpStr2.length(), 0);
+		centerPanelText.setSpan(new RelativeSizeSpan(headingSize), 17 + cpStr1.length(), 17 + cpStr1.length() + cpStr2.length(), 0);
 		centerPanelView.setText(centerPanelText);
+
+		final TextView rightPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_average_right);
+		temp = averageSeriesTimeSpent / 1000;
+		final int seriesSeconds = temp % 60; temp /= 60;
+		final int seriesMinutes = temp % 60; temp /= 60;
+		final int seriesHours = temp;
+		final String rpStr1 = String.format("%02d:%02d:%02d", seriesHours, seriesMinutes, seriesSeconds);
+		final String rpStr2 = String.valueOf("");
+		final SpannableString rightPanelText = new SpannableString(
+				rpStr1 + "\nTime Per Series\n(h:m:s)\n\n" + // 27
+				rpStr2 + "\n");
+		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, rpStr1.length(), 0);
+		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 27 + rpStr1.length(), 27 + rpStr1.length() + rpStr2.length(), 0);
+		rightPanelView.setText(rightPanelText);
+
 
 		return view;
 	}

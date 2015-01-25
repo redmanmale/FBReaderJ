@@ -32,6 +32,7 @@ public class StatisticsListTree extends FirstLevelTree {
 	@Override
 	public void waitForOpening() {
 		clear();
+		// must be in this order
 		new StatisticsTree(this, StatisticsTree.Types.progress, false);
 		new StatisticsTree(this, StatisticsTree.Types.completed, false);
 		new StatisticsTree(this, StatisticsTree.Types.reading, false);
