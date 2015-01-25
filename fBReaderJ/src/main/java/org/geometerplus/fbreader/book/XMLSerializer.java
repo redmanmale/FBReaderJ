@@ -95,6 +95,11 @@ class XMLSerializer extends AbstractSerializer {
 				"type", "label",
 				"name", ((Filter.ByLabel)filter).Label
 			);
+		} else if (filter instanceof Filter.ByCompletion) {
+			appendTag(buffer, "filter", true,
+					"type", "completion",
+					"name", String.valueOf(((Filter.ByCompletion)filter).progress)
+			);
 		} else if (filter instanceof Filter.BySeries) {
 			appendTag(buffer, "filter", true,
 				"type", "series",
@@ -812,6 +817,8 @@ class XMLSerializer extends AbstractSerializer {
 						myFilter = new Filter.ByTag(Tag.getTag(names.toArray(new String[names.size()])));
 					} else if ("label".equals(type)) {
 						myFilter = new Filter.ByLabel(attributes.getValue("name"));
+					} else if ("completion".equals(type)) {
+						myFilter = new Filter.ByCompletion(Float.parseFloat(attributes.getValue("name")));
 					} else if ("series".equals(type)) {
 						myFilter = new Filter.BySeries(new Series(
 							attributes.getValue("title")

@@ -19,6 +19,8 @@
 
 package org.geometerplus.fbreader.book;
 
+import org.geometerplus.zlibrary.core.util.RationalNumber;
+
 import java.util.List;
 
 public abstract class Filter {
@@ -67,6 +69,18 @@ public abstract class Filter {
 
 		public boolean matches(Book book) {
 			return book.labels().contains(Label);
+		}
+	}
+
+	public final static class ByCompletion extends Filter {
+		public final float progress;
+
+		public ByCompletion(float percent) {
+			progress = percent;
+		}
+
+		public boolean matches(Book book) {
+			return book.labels().contains(Book.READ_LABEL) && book.getProgress().toFloat() >= progress;
 		}
 	}
 
