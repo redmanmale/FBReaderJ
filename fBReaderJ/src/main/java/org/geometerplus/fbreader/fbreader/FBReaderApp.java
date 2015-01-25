@@ -19,6 +19,8 @@
 
 package org.geometerplus.fbreader.fbreader;
 
+import android.util.Log;
+
 import java.util.*;
 
 import org.geometerplus.zlibrary.core.application.*;
@@ -286,6 +288,8 @@ public final class FBReaderApp extends ZLApplication {
 	}
 
 	private synchronized void openBookInternal(Book book, Bookmark bookmark, boolean force) {
+		Log.d("check4", "openbookinternal");
+		book.getStatistics().startSession(System.currentTimeMillis());
 		if (!force && Model != null && book.equals(Model.Book)) {
 			if (bookmark != null) {
 				gotoBookmark(bookmark, false);
@@ -294,6 +298,7 @@ public final class FBReaderApp extends ZLApplication {
 		}
 
 		hideActivePopup();
+		storeStatistics();
 		storePosition();
 
 		BookTextView.setModel(null);
@@ -432,10 +437,13 @@ public final class FBReaderApp extends ZLApplication {
 	}
 
 	public void showBookTextView() {
+		Log.d("check6", "showbooktextview");
 		setView(BookTextView);
 	}
 
 	public void onWindowClosing() {
+		getCurrentBook().getStatistics().endSession(System.currentTimeMillis());
+		storeStatistics();
 		storePosition();
 	}
 
@@ -452,7 +460,25 @@ public final class FBReaderApp extends ZLApplication {
 
 		public void run() {
 			Collection.storePosition(myBook.getId(), myPosition);
+			Log.d("check5", "PositionSaver.run");
 			myBook.setProgress(myProgress);
+			Collection.saveBook(myBook);
+		}
+	}
+
+	private class StatisticsSaver implements Runnable {
+		private final Book myBook;
+
+		StatisticsSaver(Book book) {
+			myBook = book;
+		}
+
+		public void run() {
+			BookStatistics bookStatistics = myBook.getStatistics();
+			Collection.saveBookStatistics(bookStatistics);
+			Log.d("check5", "StatisticsSaver.run");
+			myBook.setStatistics(bookStatistics);
+			// TODO: save books only once; books are saved twice (position saver)
 			Collection.saveBook(myBook);
 		}
 	}
@@ -540,6 +566,13 @@ public final class FBReaderApp extends ZLApplication {
 		}
 	}
 
+	public void storeStatistics() {
+		final Book book = Model != null ? Model.Book : null;
+		if (book != null && BookTextView != null) {
+			saveStatistics();
+		}
+	}
+
 	private void savePosition() {
 		final RationalNumber progress = BookTextView.getProgress();
 		synchronized (mySaverThread) {
@@ -547,6 +580,15 @@ public final class FBReaderApp extends ZLApplication {
 				mySaverThread.start();
 			}
 			mySaverThread.add(new PositionSaver(myStoredPositionBook, myStoredPosition, progress));
+		}
+	}
+
+	private void saveStatistics() {
+		synchronized (mySaverThread) {
+			if (!mySaverThread.isAlive()) {
+				mySaverThread.start();
+			}
+			mySaverThread.add(new StatisticsSaver(myStoredPositionBook));
 		}
 	}
 

@@ -19,6 +19,8 @@
 
 package org.geometerplus.fbreader.book;
 
+import android.util.Log;
+
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -50,6 +52,7 @@ public class Book extends TitledEntity {
 	private volatile SeriesInfo mySeriesInfo;
 	private volatile List<UID> myUids;
 	private volatile RationalNumber myProgress;
+	private volatile BookStatistics myStatistics;
 
 	public volatile boolean HasBookmark;
 
@@ -147,6 +150,9 @@ public class Book extends TitledEntity {
 			myUids = book.myUids != null ? new ArrayList<UID>(book.myUids) : null;
 			myIsSaved = false;
 		}
+		Log.d("check5", "updateFrom - stats: " + (book.myStatistics == null ? "0" : "1") +
+			" progress: " + (book.myProgress == null ? "0" : "1"));
+		setStatistics(book.myStatistics);
 		setProgress(book.myProgress);
 		if (HasBookmark != book.HasBookmark) {
 			HasBookmark = book.HasBookmark;
@@ -204,6 +210,9 @@ public class Book extends TitledEntity {
 		mySeriesInfo = database.getSeriesInfo(myId);
 		myUids = database.listUids(myId);
 		myProgress = database.getProgress(myId);
+		myStatistics = database.getBookStatistics(myId);
+		Log.d("check5", "loadLists - stats: " + (myStatistics == null ? "0" : "1") +
+				" progress: " + (myProgress == null ? "0" : "1"));
 		HasBookmark = database.hasVisibleBookmark(myId);
 		myIsSaved = true;
 		if (myUids == null || myUids.isEmpty()) {
@@ -459,11 +468,31 @@ public class Book extends TitledEntity {
 		return myUids.contains(uid);
 	}
 
+	public BookStatistics getStatistics() {
+		return myStatistics;
+	}
+
+	public void setStatistics(BookStatistics bookStatistics) {
+		Log.d("check5", "setStatistics - bookStatistics: " + (bookStatistics == null ? "0" : "1"));
+		if(bookStatistics != null) {
+			myStatistics = bookStatistics;
+			myIsSaved = false;
+		}
+	}
+
+	public void setStatisticsWithNoCheck(BookStatistics bookStatistics) {
+		Log.d("check5", "setStatisticsWithNoCheck - bookStatistics: " + (bookStatistics == null ? "0" : "1"));
+		if(bookStatistics != null) {
+			myStatistics = bookStatistics;
+		}
+	}
+
 	public RationalNumber getProgress() {
 		return myProgress;
 	}
 
 	public void setProgress(RationalNumber progress) {
+		Log.d("check5", "setProgress - progress: " + (progress == null ? "0" : "1"));
 		if (!MiscUtil.equals(myProgress, progress)) {
 			myProgress = progress;
 			myIsSaved = false;
@@ -471,6 +500,7 @@ public class Book extends TitledEntity {
 	}
 
 	public void setProgressWithNoCheck(RationalNumber progress) {
+		Log.d("check5", "setProgressWithNoCheck - progress: " + (progress == null ? "0" : "1"));
 		myProgress = progress;
 	}
 
@@ -545,8 +575,13 @@ public class Book extends TitledEntity {
 				for (UID uid : uids()) {
 					database.saveBookUid(myId, uid);
 				}
+				Log.d("check5", "save - stats: " + (myStatistics == null ? "0" : "1" + myStatistics) +
+						" progress: " + (myProgress == null ? "0" : "1"));
 				if (myProgress != null) {
 					database.saveBookProgress(myId, myProgress);
+				}
+				if (myStatistics != null) {
+					database.saveBookStatistics(myStatistics);
 				}
 			}
 		});

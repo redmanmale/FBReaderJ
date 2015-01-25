@@ -19,6 +19,8 @@
 
 package org.geometerplus.fbreader.book;
 
+import android.util.Log;
+
 import java.util.*;
 
 import org.geometerplus.zlibrary.core.util.MiscUtil;
@@ -42,6 +44,7 @@ class BookMergeHelper {
 		result |= mergeLabels(base, duplicate);
 		result |= mergePositions(base, duplicate);
 		result |= mergeProgress(base, duplicate);
+		result |= mergeStatistics(base, duplicate);
 		if (result) {
 			myCollection.saveBook(base);
 		}
@@ -94,7 +97,21 @@ class BookMergeHelper {
 		if (progress == null) {
 			return false;
 		}
+		Log.d("check5", "mergeProgress");
 		base.setProgress(progress);
+		return true;
+	}
+
+	private boolean mergeStatistics(Book base, Book duplicate) {
+		if (base.getStatistics() != null) {
+			return false;
+		}
+		final BookStatistics statistics = duplicate.getStatistics();
+		if (statistics == null) {
+			return false;
+		}
+		Log.d("check5", "mergeStatistics");
+		base.setStatistics(statistics);
 		return true;
 	}
 

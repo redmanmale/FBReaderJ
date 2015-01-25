@@ -531,7 +531,10 @@ public final class FBReader extends Activity implements ZLApplicationWindow {
 						if (model == null || model.Book == null) {
 							return;
 						}
-						onPreferencesUpdate(myFBReaderApp.Collection.getBookById(model.Book.getId()));
+						Book currBook = myFBReaderApp.Collection.getBookById(model.Book.getId());
+						currBook.getStatistics().startSession(System.currentTimeMillis());
+						myFBReaderApp.storeStatistics();
+						onPreferencesUpdate(currBook);
 					}
 				});
 			}
