@@ -442,7 +442,10 @@ public final class FBReaderApp extends ZLApplication {
 	}
 
 	public void onWindowClosing() {
-		getCurrentBook().getStatistics().endSession(System.currentTimeMillis());
+		final Book book = Model != null ? Model.Book : null;
+		if(book != null) {
+			book.getStatistics().endSession(System.currentTimeMillis());
+		}
 		storeStatistics();
 		storePosition();
 	}
@@ -588,7 +591,7 @@ public final class FBReaderApp extends ZLApplication {
 			if (!mySaverThread.isAlive()) {
 				mySaverThread.start();
 			}
-			mySaverThread.add(new StatisticsSaver(myStoredPositionBook));
+			mySaverThread.add(new StatisticsSaver(Model.Book));
 		}
 	}
 
