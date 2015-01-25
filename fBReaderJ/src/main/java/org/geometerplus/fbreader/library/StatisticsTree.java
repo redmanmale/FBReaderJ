@@ -34,11 +34,13 @@ import org.geometerplus.android.fbreader.tree.TreeActivity;
 import org.geometerplus.android.util.ViewUtil;
 import org.geometerplus.zlibrary.core.image.ZLImage;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
+import org.geometerplus.zlibrary.core.util.RationalNumber;
 import org.geometerplus.zlibrary.ui.android.R;
 import org.geometerplus.fbreader.book.*;
 import org.geometerplus.fbreader.tree.FBTree;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class StatisticsTree extends LibraryTree {
@@ -59,11 +61,13 @@ public class StatisticsTree extends LibraryTree {
 	public static Book mostRecentBook;
 	public static int mostRecentBookPercentRead;
 	public static SpannableString mostRecentBookSummary;
-	public static int mostRecentBookHoursRead;
+	public static int mostRecentBookTimeSpent;
 	public static int mostRecentBookPagesTurned;
 	// completed
-	public final static Filter booksCompletedFilter = new Filter.ByLabel(Book.READ_LABEL);
+	public final static Filter booksCompletedFilter = new Filter.ByCompletion(1.00f);
 	public static List<Book> booksCompleted;
+	public final static Filter booksReadingFilter = new Filter.ByLabel(Book.READ_LABEL);
+	public static List<Book> booksReading;
 	public static int numPagesTurned;
 	public static int hoursSpentTotal;
 	public static int percentLibraryCompleted;
@@ -80,15 +84,22 @@ public class StatisticsTree extends LibraryTree {
 		switch(myType) {
 			case progress: {
 				mostRecentBook = Collection.getRecentBook(0);
-				Log.d("int", mostRecentBook.tags().toString());
 				if(mostRecentBook != null) {
-					mostRecentBookPercentRead = (int)(mostRecentBook.getProgress().toFloat() * 100);
+					final BookStatistics stats = mostRecentBook.getStatistics();
+					Log.d("check6", "Book: " + mostRecentBook.getTitle());
+					Log.d("check6", "Date Added: " + new Date(stats.getDateAdded()).toString());
+					Log.d("check6", "Date Opened: " + new Date(stats.getDateOpened()).toString());
+					Log.d("check6", "Date Closed: " + new Date(stats.getDateClosed()).toString());
+					final RationalNumber progress = mostRecentBook.getProgress();
+					mostRecentBookPercentRead = (int)(progress != null ? progress.toFloat() * 100 : 0);
 					String recentBookTitle = mostRecentBook.getTitle();
 					// TODO: show all authors
 					mostRecentBookSummary = new SpannableString(recentBookTitle + "\n" +
 							mostRecentBook.authors().get(0).DisplayName + "\n\n" +
 							mostRecentBookPercentRead + "% Completed");
 					mostRecentBookSummary.setSpan(new RelativeSizeSpan(1.2f), 0, recentBookTitle.length(), 0);
+					mostRecentBookTimeSpent = stats.getTotalTimeSpent();
+					mostRecentBookPagesTurned = stats.getPagesTurned();
 				} else {
 					mostRecentBookSummary = new SpannableString("Start reading!");
 				}
@@ -102,6 +113,17 @@ public class StatisticsTree extends LibraryTree {
 					}
 					booksCompleted.addAll(books);
 				}
+				booksReading = new ArrayList<Book>();
+				for (BookQuery query = new BookQuery(booksReadingFilter, 20); ; query = query.next()) {
+					final List<Book> books = Collection.books(query);
+					if (books.isEmpty()) {
+						break;
+					}
+					for (Book book : books) {
+						numPagesTurned += book.getStatistics().getPagesTurned();
+					}
+					booksReading.addAll(books);
+				}
 				booksFavorited = new ArrayList<Book>();
 				for (BookQuery query = new BookQuery(booksFavoritedFilter, 20); ; query = query.next()) {
 					final List<Book> books = Collection.books(query);
@@ -110,7 +132,6 @@ public class StatisticsTree extends LibraryTree {
 					}
 					booksFavorited.addAll(books);
 				}
-				Log.d("stats", "#completed: " + booksCompleted.size() + "  #favorited: " + booksFavorited.size());
 				break;
 			} case reading: {
 			} case average: {
@@ -187,10 +208,15 @@ public class StatisticsTree extends LibraryTree {
 		final int summaryHeight = summaryView.getMeasuredHeight();
 
 		final TextView rightView = ViewUtil.findTextView(view, R.id.statistics_tree_item_right);
+		int diff = mostRecentBookTimeSpent;
+		int millis = diff % 1000; diff /= 1000;
+		int seconds = diff % 60; diff /= 60;
+		int minutes = diff % 60; diff /= 60;
+		int hours = diff;
 		SpannableString rightText = new SpannableString(
-				mostRecentBookHoursRead + "\nHours Read\n\n" +
+				hours + ":" + minutes + "\nTime Spent\n\n" +
 				mostRecentBookPagesTurned + "\nPages Turned");
-		int str1Length = String.valueOf(mostRecentBookHoursRead).length();
+		int str1Length = String.valueOf(hours + ":" + minutes).length();
 		int str2Length = String.valueOf(mostRecentBookPagesTurned).length();
 		rightText.setSpan(new RelativeSizeSpan(headingSize), 0, str1Length, 0);
 		rightText.setSpan(new RelativeSizeSpan(headingSize), 13 + str1Length, 13 + str1Length + str2Length, 0);
@@ -221,13 +247,13 @@ public class StatisticsTree extends LibraryTree {
 		nameView.setText(tree.getName());
 
 		final TextView leftPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_completed_left);
-		final int str1Length = String.valueOf(booksCompleted.size()).length();
-		final int str2Length = String.valueOf(booksCompleted.size()).length();
+		final String str1 = String.valueOf(booksCompleted.size());
+		final String str2 = String.valueOf(numPagesTurned);
 		SpannableString leftPanelText = new SpannableString(
-				booksCompleted.size() + "\nBooks Completed\n\n" +
-				booksCompleted.size() + "\nPages Turned");
-		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, str1Length, 0);
-		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 18 + str1Length, 18 + str1Length + str2Length, 0);
+				str1 + "\nBooks Completed\n\n" +
+				str2 + "\nPages Turned");
+		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, str1.length(), 0);
+		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 18 + str1.length(), 18 + str1.length() + str2.length(), 0);
 		leftPanelView.setText(leftPanelText);
 
 		return view;
