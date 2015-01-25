@@ -119,6 +119,9 @@ public abstract class BooksDatabase {
 	protected abstract long saveBookmark(Bookmark bookmark);
 	protected abstract void deleteBookmark(Bookmark bookmark);
 
+	protected abstract BookStatistics getBookStatistics(long bookId);
+	protected abstract void saveBookStatistics(BookStatistics stats);
+
 	protected HighlightingStyle createStyle(int id, String name, int bgColor, int fgColor) {
 		return new HighlightingStyle(
 			id, name,

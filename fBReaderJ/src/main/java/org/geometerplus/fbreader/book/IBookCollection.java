@@ -92,6 +92,9 @@ public interface IBookCollection {
 	void saveBookmark(Bookmark bookmark);
 	void deleteBookmark(Bookmark bookmark);
 
+	void saveBookStatistics(BookStatistics bookStatistics);
+	BookStatistics getBookStatistics(long bookID);
+
 	HighlightingStyle getHighlightingStyle(int styleId);
 	List<HighlightingStyle> highlightingStyles();
 	void saveHighlightingStyle(HighlightingStyle style);

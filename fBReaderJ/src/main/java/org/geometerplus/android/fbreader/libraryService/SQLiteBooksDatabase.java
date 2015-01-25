@@ -19,6 +19,10 @@
 
 package org.geometerplus.android.fbreader.libraryService;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
 import java.util.*;
 import java.math.BigDecimal;
 
@@ -26,6 +30,8 @@ import android.content.Context;
 import android.database.sqlite.*;
 import android.database.SQLException;
 import android.database.Cursor;
+import android.os.Environment;
+import android.util.Log;
 
 import org.geometerplus.zlibrary.core.options.Config;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
@@ -47,7 +53,29 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 
 	SQLiteBooksDatabase(Context context) {
 		myDatabase = context.openOrCreateDatabase("books.db", Context.MODE_PRIVATE, null);
+		exportDatabase("FBReader.books.db");
 		migrate();
+	}
+
+	public boolean exportDatabase(String dir) {
+		try {
+			File dataDir = Environment.getDataDirectory();
+			File sdDir = Environment.getExternalStorageDirectory();
+			if (sdDir.canWrite()) {
+				File currentDB = new File(dataDir, "//data//org.geometerplus.zlibrary.ui.android//databases//books.db");
+				File exportDB = new File(sdDir, dir);
+				if (currentDB.exists()) {
+					FileChannel src = new FileInputStream(currentDB).getChannel();
+					FileChannel dst = new FileOutputStream(exportDB).getChannel();
+					dst.transferFrom(src, 0, src.size());
+					src.close();
+					dst.close();
+					return true;
+				}
+			}
+		} catch (Exception e) {
+		}
+		return false;
 	}
 
 	@Override
@@ -75,8 +103,11 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 	}
 
 	private void migrate() {
+		//myDatabase.setVersion(0);
 		final int version = myDatabase.getVersion();
-		final int currentVersion = 29;
+
+		final int currentVersion = 30;
+		Log.d("check1", "dbV: " + version + " dbCV: " + currentVersion);
 		if (version >= currentVersion) {
 			return;
 		}
@@ -142,6 +173,8 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 				updateTables27();
 			case 28:
 				updateTables28();
+			case 29:
+				updateTables29();
 		}
 		myDatabase.setTransactionSuccessful();
 		myDatabase.setVersion(currentVersion);
@@ -302,14 +335,49 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 		}
 		cursor.close();
 
+
 		cursor = myDatabase.rawQuery(
 			"SELECT book_id,numerator,denominator FROM BookReadingProgress",
 			null
 		);
+		int progressCount = cursor.getCount();
 		while (cursor.moveToNext()) {
 			final Book book = booksById.get(cursor.getLong(0));
 			if (book != null) {
 				book.setProgress(RationalNumber.create(cursor.getLong(1), cursor.getLong(2)));
+			}
+		}
+		cursor.close();
+
+		cursor = myDatabase.rawQuery(
+				"SELECT * FROM BookStatistics",
+				null
+		);
+		int statisticsCount = cursor.getCount();
+		Log.d("check3", "testTablecount " + statisticsCount);
+		Log.d("check5", "statisticsCount: " + statisticsCount + " progressCount: " + progressCount);
+		while (cursor.moveToNext()) {
+			Log.d("check3", "testTablev " + cursor.getLong(1));
+		}
+
+		cursor = myDatabase.rawQuery(
+			"SELECT book_id,date_added,date_opened,date_closed,pages_turned,total_time_spent " +
+			"FROM BookStatistics",
+			null
+		);
+		while (cursor.moveToNext()) {
+			Log.d("check3", "next row");
+			final Book book = booksById.get(cursor.getLong(0));
+			if (book != null) {
+				Log.d("check3", cursor.getLong(0) + " " + book.getTitle() + " " + cursor.getLong(1));
+				book.setStatistics(new BookStatistics(
+					cursor.getLong(0),
+					cursor.getLong(1),
+					cursor.getLong(2),
+					cursor.getLong(3),
+					(int)cursor.getLong(4),
+					(int)cursor.getLong(5))
+				);
 			}
 		}
 		cursor.close();
@@ -916,6 +984,45 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 		statement.execute();
 	}
 
+	@Override
+	protected BookStatistics getBookStatistics(long bookId) {
+		BookStatistics bookStatistics;
+		Cursor cursor = myDatabase.rawQuery(
+				"SELECT book_id,date_added,date_opened,date_closed,pages_turned,total_time_spent FROM" +
+						" BookStatistics WHERE book_id = " + bookId, null
+		);
+		if(cursor.moveToNext()) {
+			bookStatistics = new BookStatistics(
+					cursor.getLong(0),			// book_id
+					cursor.getLong(1),			// date_added
+					cursor.getLong(2),			// date_opened
+					cursor.getLong(3),			// date_closed
+					(int)cursor.getLong(4),		// pages_turned
+					(int)cursor.getLong(5));	// total_time_spent
+		} else {
+			bookStatistics = null;
+		}
+		Log.d("check4", "loadBookStatistics1 " + bookStatistics);
+		cursor.close();
+		return bookStatistics;
+	}
+
+	@Override
+	protected void saveBookStatistics(BookStatistics bookStatistics) {
+		final SQLiteStatement statement = get(
+				"INSERT OR REPLACE INTO BookStatistics " +
+				"(book_id,date_added,date_opened,date_closed,pages_turned,total_time_spent) " +
+				"VALUES (?,?,?,?,?,?)"
+		);
+		statement.bindLong(1, bookStatistics.getBookID());
+		statement.bindLong(2, bookStatistics.getDateAdded());
+		statement.bindLong(3, bookStatistics.getDateOpened());
+		statement.bindLong(4, bookStatistics.getDateClosed());
+		statement.bindLong(5, bookStatistics.getPagesTurned());
+		statement.bindLong(6, bookStatistics.getTotalTimeSpent());
+		statement.execute();
+	}
+
 	protected ZLTextFixedPosition.WithTimestamp getStoredPosition(long bookId) {
 		ZLTextFixedPosition.WithTimestamp position = null;
 		Cursor cursor = myDatabase.rawQuery(
@@ -1054,6 +1161,7 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 	@Override
 	protected void deleteBook(long bookId) {
 		myDatabase.beginTransaction();
+		myDatabase.execSQL("DELETE FROM BookStatistics WHERE book_id=" + bookId);
 		myDatabase.execSQL("DELETE FROM BookHash WHERE book_id=" + bookId);
 		myDatabase.execSQL("DELETE FROM BookAuthor WHERE book_id=" + bookId);
 		myDatabase.execSQL("DELETE FROM BookLabel WHERE book_id=" + bookId);
@@ -1491,6 +1599,27 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 
 	private void updateTables28() {
 		myDatabase.execSQL("ALTER TABLE HighlightingStyle ADD COLUMN fg_color INTEGER NOT NULL DEFAULT -1");
+	}
+
+	private void updateTables29() {
+		Log.d("check1", "bookstatistics table created");
+		//myDatabase.execSQL("DROP TABLE IF EXISTS BookStatistics");
+		myDatabase.execSQL(
+			"CREATE TABLE IF NOT EXISTS BookStatistics(" +
+				"book_id INTEGER PRIMARY KEY REFERENCES Books(book_id)," +
+				"date_added INTEGER NOT NULL DEFAULT -1," +
+				"date_opened INTEGER," +
+				"date_closed INTEGER," +
+				"pages_turned INTEGER," +
+				"total_time_spent INTEGER)");
+		Cursor cursor = myDatabase.rawQuery("SELECT * FROM BookStatistics", null);
+		Log.d("check1", "#rows in BookStatistics before insert: " + cursor.getCount());
+		myDatabase.execSQL("INSERT OR REPLACE INTO BookStatistics (book_id) SELECT book_id FROM Books");
+		cursor.close();
+		cursor = myDatabase.rawQuery("SELECT * FROM BookStatistics", null);
+		Log.d("check1", "#rows in BookStatistics after insert: " + cursor.getCount());
+		myDatabase.execSQL("UPDATE BookStatistics SET date_added = " + System.currentTimeMillis());
+		cursor.close();
 	}
 
 	private SQLiteStatement get(String sql) {
