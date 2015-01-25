@@ -355,6 +355,28 @@ public class BookCollectionShadow extends AbstractBookCollection implements Serv
 		}
 	}
 
+	public synchronized void saveBookStatistics(BookStatistics bookStatistics) {
+		if (myInterface == null) {
+			return;
+		}
+		try {
+			myInterface.saveBookStatistics(SerializerUtil.serialize(bookStatistics));
+		} catch (RemoteException e) {
+		}
+	}
+
+	public synchronized BookStatistics getBookStatistics(long bookID) {
+		if (myInterface == null) {
+			return null;
+		}
+		try {
+			String xml = myInterface.getBookStatistics(bookID);
+			return SerializerUtil.deserializeBookStatistics(xml);
+		} catch (RemoteException e) {
+		}
+		return null;
+	}
+
 	public synchronized ZLTextFixedPosition.WithTimestamp getStoredPosition(long bookId) {
 		if (myInterface == null) {
 			return null;

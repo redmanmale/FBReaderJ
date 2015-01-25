@@ -19,6 +19,8 @@
 
 package org.geometerplus.fbreader.book;
 
+import android.util.Log;
+
 import java.io.File;
 import java.util.*;
 
@@ -61,6 +63,7 @@ public class BookCollection extends AbstractBookCollection {
 	}
 
 	public Book getBookByFile(ZLFile bookFile) {
+		Log.d("check2","getbookbyfile1");
 		if (bookFile == null) {
 			return null;
 		}
@@ -68,6 +71,7 @@ public class BookCollection extends AbstractBookCollection {
 		if (plugin == null) {
 			return null;
 		}
+		Log.d("check2","getbookbyfile2");
 		if (!(plugin instanceof BuiltinFormatPlugin) && bookFile != bookFile.getPhysicalFile()) {
 			return null;
 		}
@@ -76,11 +80,13 @@ public class BookCollection extends AbstractBookCollection {
 		} catch (BookReadingException e) {
 			return null;
 		}
+		Log.d("check2","getbookbyfile3");
 
 		Book book = myBooksByFile.get(bookFile);
 		if (book != null) {
 			return book;
 		}
+		Log.d("check2","getbookbyfile4");
 
 		final ZLFile otherFile = myDuplicateResolver.findDuplicate(bookFile);
 		if (otherFile != null) {
@@ -89,11 +95,13 @@ public class BookCollection extends AbstractBookCollection {
 				return book;
 			}
 		}
+		Log.d("check2","getbookbyfile5");
 
 		final ZLPhysicalFile physicalFile = bookFile.getPhysicalFile();
 		if (physicalFile != null && !physicalFile.exists()) {
 			return null;
 		}
+		Log.d("check2","getbookbyfile6");
 
 		final FileInfoSet fileInfos = new FileInfoSet(myDatabase, bookFile);
 
@@ -101,12 +109,14 @@ public class BookCollection extends AbstractBookCollection {
 		if (book != null) {
 			book.loadLists(myDatabase);
 		}
+		Log.d("check2","getbookbyfile7");
 
 		if (book != null && fileInfos.check(physicalFile, physicalFile != bookFile)) {
 			saveBook(book);
 			return book;
 		}
 		fileInfos.save();
+		Log.d("check2", "getbookbyfile8");
 
 		try {
 			if (book == null) {
@@ -119,6 +129,7 @@ public class BookCollection extends AbstractBookCollection {
 		}
 
 		saveBook(book);
+		Log.d("check2","getbookbyfile9");
 		return book;
 	}
 
@@ -144,7 +155,6 @@ public class BookCollection extends AbstractBookCollection {
 		if (!physicalFile.exists()) {
 			return null;
 		}
-
 		final FileInfoSet fileInfos = new FileInfoSet(myDatabase, physicalFile);
 		if (fileInfos.check(physicalFile, physicalFile != bookFile)) {
 			// loaded from db
@@ -188,13 +198,14 @@ public class BookCollection extends AbstractBookCollection {
 	}
 
 	private boolean addBook(Book book, boolean force) {
+		Log.d("check2", "addBook0");
 		if (book == null) {
 			return false;
 		}
-
 		synchronized (myBooksByFile) {
 			final Book existing = myBooksByFile.get(book.File);
 			if (existing == null) {
+				Log.d("check2", "addBook1 " + book.getId());
 				if (book.getId() == -1 && !book.save(myDatabase, true)) {
 					return false;
 				}
@@ -203,22 +214,32 @@ public class BookCollection extends AbstractBookCollection {
 				final Book original = duplicate != null ? myBooksByFile.get(duplicate) : null;
 				if (original != null) {
 					if (new BookMergeHelper(this).merge(original, book)) {
+						Log.d("check2", "addBook2Updated");
 						fireBookEvent(BookEvent.Updated, original);
 					}
 				} else {
+					// progress = null here too
+					Log.d("check2", "addBook3Added " + (book.getStatistics() == null ? "statistics null" : book.getStatistics().getDateAdded() + "") +
+							(book.getProgress() == null ? " progress null" : book.getProgress().toString() + ""));
+					if (book.getStatistics() == null) {
+						book.setStatistics(new BookStatistics(book.getId()));
+					}
 					myBooksByFile.put(book.File, book);
 					myDuplicateResolver.addFile(book.File);
 					myBooksById.put(book.getId(), book);
 					fireBookEvent(BookEvent.Added, book);
 				}
+				Log.d("check2", "addBook4");
 				return true;
 			} else if (force) {
 				existing.updateFrom(book);
 				if (existing.save(myDatabase, false)) {
 					fireBookEvent(BookEvent.Updated, existing);
+					Log.d("check2", "addBook6");
 					return true;
 				}
 			}
+			Log.d("check2", "addBook7");
 			return false;
 		}
 	}
@@ -695,6 +716,14 @@ public class BookCollection extends AbstractBookCollection {
 				}
 			}
 		}
+	}
+
+	public void saveBookStatistics(BookStatistics bookStatistics) {
+		myDatabase.saveBookStatistics(bookStatistics);
+	}
+
+	public BookStatistics getBookStatistics(long bookID) {
+		return myDatabase.getBookStatistics(bookID);
 	}
 
 	public ZLTextFixedPosition.WithTimestamp getStoredPosition(long bookId) {

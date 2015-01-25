@@ -70,6 +70,14 @@ public abstract class SerializerUtil {
 		return books;
 	}
 
+	public static String serialize(BookStatistics bookStatistics) {
+		return bookStatistics != null ? defaultSerializer.serialize(bookStatistics) : null;
+	}
+
+	public static BookStatistics deserializeBookStatistics(String xml) {
+		return xml != null ? defaultSerializer.deserializeBookStatistics(xml) : null;
+	}
+
 	public static String serialize(Bookmark bookmark) {
 		return bookmark != null ? defaultSerializer.serialize(bookmark) : null;
 	}

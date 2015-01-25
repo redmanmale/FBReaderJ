@@ -254,6 +254,15 @@ public class LibraryService extends Service {
 			return myCollection.labels();
 		}
 
+		public void saveBookStatistics(String bookStatistics) {
+			myCollection.saveBookStatistics(SerializerUtil.deserializeBookStatistics(bookStatistics));
+		}
+
+		public String getBookStatistics(long bookID) {
+			BookStatistics bookStatistics = myCollection.getBookStatistics(bookID);
+			return SerializerUtil.serialize(bookStatistics);
+		}
+
 		public PositionWithTimestamp getStoredPosition(long bookId) {
 			final ZLTextPosition position = myCollection.getStoredPosition(bookId);
 			return position != null ? new PositionWithTimestamp(position) : null;

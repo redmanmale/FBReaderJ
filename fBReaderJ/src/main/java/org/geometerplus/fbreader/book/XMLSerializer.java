@@ -25,6 +25,8 @@ import java.text.DateFormat;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import android.util.Log;
 import android.util.Xml;
 
 import org.geometerplus.zlibrary.core.constants.XMLNamespaces;
@@ -235,6 +237,11 @@ class XMLSerializer extends AbstractSerializer {
 			"rel", "http://opds-spec.org/acquisition"
 		);
 
+		final BookStatistics bookStatistics = book.getStatistics();
+		if (bookStatistics != null) {
+			buffer.append(serialize(bookStatistics));
+		}
+
 		final RationalNumber progress = book.getProgress();
 		if (progress != null) {
 			appendTag(
@@ -243,8 +250,11 @@ class XMLSerializer extends AbstractSerializer {
 				"denominator", Long.toString(progress.Denominator)
 			);
 		}
+		Log.d("check5", "serialize - stats: " + (bookStatistics == null ? "0" : "1") +
+				" progress: " + (progress == null ? "0" : "1"));
 
 		closeTag(buffer, "entry");
+		Log.d("check5", "serialize - checkXML: " + buffer.toString());
 	}
 
 	@Override
@@ -252,6 +262,9 @@ class XMLSerializer extends AbstractSerializer {
 		try {
 			final BookDeserializer deserializer = new BookDeserializer();
 			Xml.parse(xml, deserializer);
+			Book book = deserializer.getBook();
+			Log.d("check5", "deserializeBook - stats: " + (book.getStatistics() == null ? "0" : "1") +
+					" progress: " + (book.getProgress() == null ? "0" : "1 title: " + book.getTitle()));
 			return deserializer.getBook();
 		} catch (SAXException e) {
 			System.err.println(xml);
@@ -322,6 +335,36 @@ class XMLSerializer extends AbstractSerializer {
 			return null;
 		}
 	}
+
+	@Override
+	public String serialize(BookStatistics bookStatistics) {
+		if(bookStatistics == null)
+			return "";
+		final StringBuilder buffer = new StringBuilder();
+		appendTag(buffer, "bookstatistics", true,
+				"book_id", String.valueOf(bookStatistics.getBookID()),
+				"date_added", String.valueOf(bookStatistics.getDateAdded()),
+				"date_closed", String.valueOf(bookStatistics.getDateClosed()),
+				"date_opened", String.valueOf(bookStatistics.getDateOpened()),
+				"pages_turned", String.valueOf(bookStatistics.getPagesTurned()),
+				"total_time_spent", String.valueOf(bookStatistics.getTotalTimeSpent())
+		);
+		return buffer.toString();
+	}
+
+	@Override
+	public BookStatistics deserializeBookStatistics(String xml) {
+		try {
+			final BookStatisticsDeserializer deserializer = new BookStatisticsDeserializer();
+			Xml.parse(xml, deserializer);
+			return deserializer.getBookStatistics();
+		} catch (SAXException e) {
+			System.err.println(xml);
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 
 	@Override
 	public String serialize(HighlightingStyle style) {
@@ -501,7 +544,9 @@ class XMLSerializer extends AbstractSerializer {
 		private final StringBuilder myAuthorName = new StringBuilder();
 		private final StringBuilder mySeriesTitle = new StringBuilder();
 		private final StringBuilder mySeriesIndex = new StringBuilder();
+		private final BookStatisticsDeserializer statisticsDeserializer = new BookStatisticsDeserializer();
 		private boolean myHasBookmark;
+		private BookStatistics myBookStatistics;
 		private RationalNumber myProgress;
 
 		private Book myBook;
@@ -527,6 +572,7 @@ class XMLSerializer extends AbstractSerializer {
 			myTags.clear();
 			myLabels.clear();
 			myHasBookmark = false;
+			myBookStatistics = null;
 			myProgress = null;
 
 			myState = State.READ_NOTHING;
@@ -557,6 +603,7 @@ class XMLSerializer extends AbstractSerializer {
 				myBook.addUidWithNoCheck(uid);
 			}
 			myBook.setSeriesInfoWithNoCheck(string(mySeriesTitle), string(mySeriesIndex));
+			myBook.setStatisticsWithNoCheck(myBookStatistics);
 			myBook.setProgressWithNoCheck(myProgress);
 			myBook.HasBookmark = myHasBookmark;
 		}
@@ -605,6 +652,10 @@ class XMLSerializer extends AbstractSerializer {
 					} else if ("link".equals(localName)) {
 						// TODO: use "rel" attribute
 						myUrl = attributes.getValue("href");
+					} else if ("bookstatistics".equals(localName)) {
+						statisticsDeserializer.startElement(uri, localName, qName, attributes);
+						statisticsDeserializer.endDocument();
+						myBookStatistics = statisticsDeserializer.getBookStatistics();
 					} else if ("progress".equals(localName)) {
 						myProgress = RationalNumber.create(
 							parseLong(attributes.getValue("numerator")),
@@ -1036,6 +1087,50 @@ class XMLSerializer extends AbstractSerializer {
 						fg != -1 ? new ZLColor(fg) : null
 					);
 				}
+			}
+		}
+	}
+
+	private static final class BookStatisticsDeserializer extends DefaultHandler {
+		private long myBookID;
+		private long myDateAdded;
+		private long myDateOpened;
+		private long myDateClosed;
+		private int myPagesTurned;
+		private int myTotalTimeSpent;
+		private BookStatistics myBookStatistics;
+
+		BookStatistics getBookStatistics() {
+			return myBookStatistics;
+		}
+
+		@Override
+		public void startDocument() {
+			myBookStatistics = null;
+		}
+
+		@Override
+		public void endDocument() {
+			// correct for openbook
+			myBookStatistics = new BookStatistics(
+				myBookID,
+				myDateAdded,
+				myDateOpened,
+				myDateClosed,
+				myPagesTurned,
+				myTotalTimeSpent
+			);
+		}
+
+		@Override
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+			if ("bookstatistics".equals(localName)) {
+				myBookID = parseLong(attributes.getValue("book_id"));
+				myDateAdded = parseLong(attributes.getValue("date_added"));
+				myDateOpened = parseLong(attributes.getValue("date_opened"));
+				myDateClosed = parseLong(attributes.getValue("date_closed"));
+				myPagesTurned = parseInt(attributes.getValue("pages_turned"));
+				myTotalTimeSpent = parseInt(attributes.getValue("total_time_spent"));
 			}
 		}
 	}

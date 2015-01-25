@@ -66,4 +66,7 @@ interface LibraryInterface {
 	void setHash(in String book, in String hash);
 
 	String getCoverUrl(in String bookPath);
+
+	void saveBookStatistics(in String bookStatistics);
+	String getBookStatistics(in long bookID);
 }
