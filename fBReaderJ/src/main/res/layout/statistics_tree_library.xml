@@ -17,7 +17,7 @@
 		android:textStyle="bold"/>
 
 	<TextView
-		android:id="@+id/statistics_tree_completed_left"
+		android:id="@+id/statistics_tree_left"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:textAppearance="?android:attr/textAppearanceSmall"
@@ -28,24 +28,39 @@
 		android:minWidth="105dp"/>
 
 	<TextView
-		android:id="@+id/statistics_tree_completed_center"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:textAppearance="?android:attr/textAppearanceSmall"
-		android:gravity="center"
-		android:layout_below="@+id/statistics_tree_item_name"
-		android:layout_alignBottom="@+id/statistics_tree_completed_left"
-		android:layout_centerHorizontal="true"/>
-
-	<TextView
-		android:id="@+id/statistics_tree_completed_right"
+		android:id="@+id/statistics_tree_right"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:gravity="center"
 		android:layout_marginTop="-20dp"
 		android:layout_below="@+id/statistics_tree_item_name"
 		android:layout_alignParentRight="true"
-		android:layout_alignBottom="@+id/statistics_tree_completed_left"
+		android:layout_alignBottom="@+id/statistics_tree_left"
 		android:minWidth="105dp"/>
+
+	<TextView
+		android:id="@+id/statistics_tree_centerL"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:gravity="center"
+		android:minWidth="80dp"
+		android:layout_toRightOf="@id/statistics_tree_left"
+		android:layout_below="@+id/statistics_tree_item_name"
+		android:layout_alignBottom="@+id/statistics_tree_left"
+		android:layout_centerHorizontal="true"/>
+
+	<TextView
+		android:id="@+id/statistics_tree_centerR"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:gravity="center"
+		android:minWidth="80dp"
+		android:layout_toLeftOf="@id/statistics_tree_right"
+		android:layout_below="@+id/statistics_tree_item_name"
+		android:layout_alignBottom="@+id/statistics_tree_left"
+		android:layout_centerHorizontal="true"/>
+
 
 </RelativeLayout>

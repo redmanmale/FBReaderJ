@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/statistics_tree_id"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:minHeight="?android:attr/listPreferredItemHeight"
+	android:padding="5dp">
+
+	<TextView
+		android:id="@+id/statistics_tree_item_name"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:gravity="center"
+		android:layout_marginTop="-4dp"
+		android:layout_marginBottom="4dp"
+		android:textStyle="bold"/>
+
+	<TextView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceLarge"
+		android:layout_marginTop="-10dp"
+		android:text="\nBook VS Time Graph"
+		android:id="@+id/textView"
+		android:layout_below="@+id/statistics_tree_item_name"
+		android:layout_centerHorizontal="true"/>
+
+</RelativeLayout>
