@@ -181,12 +181,12 @@ public class StatisticsTree extends LibraryTree {
 				averageBookTimeSpent = 0;
 				averagePagesPerHour = 0;
 				for (Book book : booksReading) {
-					int timeSpent = book.getStatistics().getTotalTimeSpent();
-					averageBookTimeSpent += timeSpent;
-					int hours = (timeSpent / (1000 * 60 * 60)) % 24;
-					averagePagesPerHour += book.getStatistics().getPagesTurned() / (hours == 0 ? 1 : hours);
+					averageBookTimeSpent += book.getStatistics().getTotalTimeSpent();
+					averagePagesPerHour += book.getStatistics().getPagesTurned();
 				}
-				averageBookTimeSpent /= booksReading.size();
+				final int hours = averageBookTimeSpent / (1000 * 60 * 60);
+				averagePagesPerHour /= hours < 1 ? 1 : hours;
+				averageBookTimeSpent /= booksReading.size() < 1 ? 1 : booksReading.size();
 
 				averageSeriesTimeSpent = 0;
 				for (String title : seriesCompletionMap.keySet()) {
