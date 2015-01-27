@@ -21,6 +21,7 @@ package org.geometerplus.fbreader.library;
 
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,7 +41,6 @@ import org.geometerplus.fbreader.book.*;
 import org.geometerplus.fbreader.tree.FBTree;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -279,8 +279,6 @@ public class StatisticsTree extends LibraryTree {
 
 		final TextView summaryView = ViewUtil.findTextView(view, R.id.statistics_tree_item_summary);
 		summaryView.setText(getSpannableSummary());
-		view.measure(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		final int summaryHeight = summaryView.getMeasuredHeight();
 
 		int temp = mostRecentBookTimeSpent / 1000;
 		final int seconds = temp % 60; temp /= 60;
@@ -294,10 +292,14 @@ public class StatisticsTree extends LibraryTree {
 				1.0f, "\nPages Turned"
 		);
 
+		final DisplayMetrics metrics = new DisplayMetrics();
+		activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		final int coverHeight = (int)metrics.density * 90;
+		final int coverWidth = coverHeight * 2 / 3;
 		final ImageView coverView = ViewUtil.findImageView(view, R.id.statistics_tree_item_cover);
 		if (sharedCoverManager == null) {
 			Log.d("manager", "manager created from progress");
-			sharedCoverManager = new CoverManager(activity, activity.ImageSynchronizer, summaryHeight * 21 / 32 *7/5, summaryHeight*7/5);
+			sharedCoverManager = new CoverManager(activity, activity.ImageSynchronizer, coverWidth, coverHeight);
 			view.requestLayout();
 		}
 		if (!sharedCoverManager.trySetCoverImage(coverView, tree)) {
