@@ -19,11 +19,8 @@
 
 package org.geometerplus.fbreader.library;
 
-import android.support.annotation.NonNull;
 import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
-import android.text.style.TabStopSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,12 +40,10 @@ import org.geometerplus.fbreader.book.*;
 import org.geometerplus.fbreader.tree.FBTree;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class StatisticsTree extends LibraryTree {
 	private static CoverManager sharedCoverManager;
@@ -62,35 +57,36 @@ public class StatisticsTree extends LibraryTree {
 	public final Types myType;
 	public final String entryTitle;
 	public final boolean isSelectable;
-	private final static float headingSize = 1.7f;
+	public final static float headingSize = 1.7f;
+	public final static float smallSize = 0.7f;
 
 	// progress
-	public static Book mostRecentBook;
-	public static int mostRecentBookPercentRead;
-	public static SpannableString mostRecentBookSummary;
-	public static int mostRecentBookTimeSpent;
-	public static int mostRecentBookPagesTurned;
+	private static Book mostRecentBook;
+	private static int mostRecentBookPercentRead;
+	private static SpannableString mostRecentBookSummary;
+	private static int mostRecentBookTimeSpent;
+	private static int mostRecentBookPagesTurned;
 	// completed
-	public final static Filter booksCompletedFilter = new Filter.ByCompletion(1.00f);
-	public static List<Book> booksCompleted;
-	public final static Filter booksReadingFilter = new Filter.ByLabel(Book.READ_LABEL);
-	public static List<Book> booksReading;
-	public static Map<String, List<Book>> seriesCompletionMap;
-	public static int totalPagesTurned;
-	public static int totalTimeSpent;
+	private static Map<String, List<Book>> seriesCompletionMap;
+	private final static Filter booksCompletedFilter = new Filter.ByCompletion(1.00f);
+	private static List<Book> booksCompleted;
+	private final static Filter booksReadingFilter = new Filter.ByLabel(Book.READ_LABEL);
+	private static List<Book> booksReading;
+	private static int totalPagesTurned;
+	private static int totalTimeSpent;
 	// average
-	public static int averageBookTimeSpent;
-	public static int averageSeriesTimeSpent;
-	public static int averagePagesPerHour;
+	private static int averageBookTimeSpent;
+	private static int averageSeriesTimeSpent;
+	private static int averagePagesPerHour;
 	// library
-	public static int numBooksInLibrary;
-	public static int numSeriesInLibrary;
-	public static int numAuthorsInLibrary;
-	public static int numTagsInLibrary;
-	public static List<Bookmark> boomarksInLibrary;
-	//
-	public final static Filter booksFavoritedFilter = new Filter.ByLabel(Book.FAVORITE_LABEL);
-	public static List<Book> booksFavorited;
+	private final static Filter booksFavoritedFilter = new Filter.ByLabel(Book.FAVORITE_LABEL);
+	private static List<Book> booksFavorited;
+	private static List<Bookmark> bookmarksInLibrary;
+	private static int numBooksInLibrary;
+	private static int numSeriesInLibrary;
+	private static int numAuthorsInLibrary;
+	private static int numTagsInLibrary;
+
 	StatisticsTree(LibraryTree parent, Types type, boolean selectable) {
 		super(parent);
 
@@ -101,25 +97,17 @@ public class StatisticsTree extends LibraryTree {
 		switch(myType) {
 			case progress: {
 				mostRecentBook = Collection.getRecentBook(0);
-				if(mostRecentBook != null) {
-					final BookStatistics stats = mostRecentBook.getStatistics();
-					Log.d("check6", "Book: " + mostRecentBook.getTitle());
-					Log.d("check6", "Date Added: " + new Date(stats.getDateAdded()).toString());
-					Log.d("check6", "Date Opened: " + new Date(stats.getDateOpened()).toString());
-					Log.d("check6", "Date Closed: " + new Date(stats.getDateClosed()).toString());
-					final RationalNumber progress = mostRecentBook.getProgress();
-					mostRecentBookPercentRead = (int)(progress != null ? progress.toFloat() * 100 : 0);
-					String recentBookTitle = mostRecentBook.getTitle();
-					// TODO: show all authors
-					mostRecentBookSummary = new SpannableString(recentBookTitle + "\n" +
-							mostRecentBook.authors().get(0).DisplayName + "\n\n" +
-							mostRecentBookPercentRead + "% Completed");
-					mostRecentBookSummary.setSpan(new RelativeSizeSpan(1.2f), 0, recentBookTitle.length(), 0);
-					mostRecentBookTimeSpent = stats.getTotalTimeSpent();
-					mostRecentBookPagesTurned = stats.getPagesTurned();
-				} else {
-					mostRecentBookSummary = new SpannableString("Start reading!");
-				}
+				final RationalNumber progress = mostRecentBook.getProgress();
+				mostRecentBookPercentRead = (int)(progress != null ? progress.toFloat() * 100 : 0);
+				final String recentBookTitle = mostRecentBook.getTitle();
+				// TODO: show all authors
+				mostRecentBookSummary = new SpannableString(recentBookTitle + "\n" +
+						mostRecentBook.authors().get(0).DisplayName + "\n\n" +
+						mostRecentBookPercentRead + "% Completed");
+				mostRecentBookSummary.setSpan(new RelativeSizeSpan(1.2f), 0, recentBookTitle.length(), 0);
+				final BookStatistics stats = mostRecentBook.getStatistics();
+				mostRecentBookTimeSpent = stats.getTotalTimeSpent();
+				mostRecentBookPagesTurned = stats.getPagesTurned();
 				break;
 			} case completed: {
 				booksCompleted = new ArrayList<Book>();
@@ -140,17 +128,15 @@ public class StatisticsTree extends LibraryTree {
 					final String title = seriesInfo.Series.getTitle();
 					if(seriesCompletionMap.containsKey(title)) {
 						seriesCompletionMap.get(title).add(book);
-						Log.d("check9", "Added book " + book.getTitle() + " into ArrayList at " + title);
 					} else {
-						Log.d("check9", "Created ArrayList for: " + title);
 						seriesCompletionMap.put(title, new ArrayList<Book>());
 						seriesCompletionMap.get(title).add(book);
 					}
 				}
 				final ArrayList<String> seriesToBeRemoved = new ArrayList<String>();
 				for (String title : seriesCompletionMap.keySet()) {
-					Log.d("check9", "On keySet title: " + title);
 					final Filter seriesFilter = new Filter.BySeries(new Series(title));
+					// TODO: optimize this
 					List<Book> allBooksInThisSeries = new ArrayList<Book>();
 					for (BookQuery query = new BookQuery(seriesFilter, 20); ; query = query.next()) {
 						final List<Book> books = Collection.books(query);
@@ -160,12 +146,10 @@ public class StatisticsTree extends LibraryTree {
 						allBooksInThisSeries.addAll(books);
 					}
 					if (seriesCompletionMap.get(title).size() < allBooksInThisSeries.size()) {
-						Log.d("check9", "Marked for deletion: " + title);
 						seriesToBeRemoved.add(title);
 					}
 				}
 				for (String seriesToRemove : seriesToBeRemoved) {
-					Log.d("check9", "Removed: " + seriesToRemove);
 					seriesCompletionMap.remove(seriesToRemove);
 				}
 
@@ -193,7 +177,6 @@ public class StatisticsTree extends LibraryTree {
 					booksFavorited.addAll(books);
 				}
 				break;
-			} case reading: {
 			} case average: {
 				averageBookTimeSpent = 0;
 				averagePagesPerHour = 0;
@@ -219,14 +202,15 @@ public class StatisticsTree extends LibraryTree {
 				numAuthorsInLibrary = Collection.authors().size();
 				numTagsInLibrary = Collection.tags().size();
 				numBooksInLibrary = Collection.size();
-				boomarksInLibrary = new ArrayList<Bookmark>();
+				bookmarksInLibrary = new ArrayList<Bookmark>();
 				for (BookmarkQuery query = new BookmarkQuery(20); ; query = query.next()) {
 					final List<Bookmark> bookmarks = Collection.bookmarks(query);
 					if (bookmarks.isEmpty()) {
 						break;
 					}
-					boomarksInLibrary.addAll(bookmarks);
+					bookmarksInLibrary.addAll(bookmarks);
 				}
+			} case reading: {
 			} default: {
 			}
 		}
@@ -246,7 +230,7 @@ public class StatisticsTree extends LibraryTree {
 	}
 
 	// pseudo getSummary()
-	public SpannableString getSpannableSummary() {
+	private SpannableString getSpannableSummary() {
 		return mostRecentBookSummary;
 	}
 
@@ -272,12 +256,12 @@ public class StatisticsTree extends LibraryTree {
 				return createProgressStatisticsView(convertView, parent, tree, activity);
 			} case completed: {
 				return createCompletedStatisticsView(convertView, parent, tree, activity);
-			} case reading: {
-				return createReadingStatisticsView(convertView, parent, tree, activity);
 			} case average: {
 				return createAverageStatisticsView(convertView, parent, tree, activity);
 			} case library: {
 				return createLibraryStatisticsView(convertView, parent, tree, activity);
+			} case reading: {
+				return createReadingStatisticsView(convertView, parent, tree, activity);
 			} default: {
 				return createProgressStatisticsView(convertView, parent, tree, activity);
 			}
@@ -298,19 +282,17 @@ public class StatisticsTree extends LibraryTree {
 		view.measure(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		final int summaryHeight = summaryView.getMeasuredHeight();
 
-		final TextView rightView = ViewUtil.findTextView(view, R.id.statistics_tree_item_right);
 		int temp = mostRecentBookTimeSpent / 1000;
 		final int seconds = temp % 60; temp /= 60;
 		final int minutes = temp % 60; temp /= 60;
 		final int hours = temp;
-		final String str1 = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-		final String str2 = String.valueOf(mostRecentBookPagesTurned);
-		final SpannableString rightText = new SpannableString(
-				str1 + "\nTime Spent (h:m:s)\n\n" + // 21
-				str2 + "\nPages Turned");
-		rightText.setSpan(new RelativeSizeSpan(headingSize), 0, str1.length(), 0);
-		rightText.setSpan(new RelativeSizeSpan(headingSize), 21 + str1.length(), 21 + str1.length() + str2.length(), 0);
-		rightView.setText(rightText);
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_item_right),
+				headingSize, String.format("%02d:%02d:%02d", hours, minutes, seconds),
+				1.0f, "\nTime Spent",
+				smallSize, "\n(h:m:s)\n\n",
+				headingSize, String.valueOf(mostRecentBookPagesTurned),
+				1.0f, "\nPages Turned"
+		);
 
 		final ImageView coverView = ViewUtil.findImageView(view, R.id.statistics_tree_item_cover);
 		if (sharedCoverManager == null) {
@@ -337,40 +319,107 @@ public class StatisticsTree extends LibraryTree {
 		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
 		nameView.setText(tree.getName());
 
-		final TextView leftPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_completed_left);
-		final int percent = (int)(RationalNumber.create(booksCompleted.size(), numBooksInLibrary).toFloat() * 100);
-		final String lpStr1 = String.valueOf(booksCompleted.size());
-		final String lpStr2 = String.valueOf(percent) + "%";
-		final SpannableString leftPanelText = new SpannableString(
-				lpStr1 + "\nBooks\n\n" +
-				lpStr2 + "\nOf Your Library");
-		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, lpStr1.length(), 0);
-		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 8 + lpStr1.length(), 8 + lpStr1.length() + lpStr2.length(), 0);
-		leftPanelView.setText(leftPanelText);
+		final int percentCompleted = (int)(RationalNumber.create(booksCompleted.size(), numBooksInLibrary).toFloat() * 100);
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_completed_left),
+			headingSize, String.valueOf(booksCompleted.size()),
+			1.0f, "\nBooks\n\n",
+			headingSize, String.valueOf(percentCompleted) + '%',
+			1.0f, "\nOf Your Library"
+		);
 
-		final TextView centerPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_completed_center);
 		int temp = totalTimeSpent / 1000 / 60;
 		final int minutes = temp % 60; temp /= 60;
 		final int hours = temp % 24; temp /= 24;
 		final int days = temp;
-		final String cpStr1 = String.valueOf(String.format("%02d:%02d:%02d", days, hours, minutes));
-		final String cpStr2 = String.valueOf("");
-		final SpannableString centerPanelText = new SpannableString(
-				cpStr1 + "\nTotal Time Spent\n(d:h:m)\n\n" +
-				cpStr2 + "\n");
-		centerPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, cpStr1.length(), 0);
-		centerPanelText.setSpan(new RelativeSizeSpan(headingSize), 27 + cpStr1.length(), 27 + cpStr1.length() + cpStr2.length(), 0);
-		centerPanelView.setText(centerPanelText);
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_completed_center),
+			headingSize, String.valueOf(String.format("%02d:%02d:%02d", days, hours, minutes)),
+			1.0f, "\nTotal Time Spent",
+			smallSize, "\n(d:h:m)\n\n"
+		);
 
-		final TextView rightPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_completed_right);
-		final String rpStr1 = String.valueOf(seriesCompletionMap.size());
-		final String rpStr2 = String.valueOf(totalPagesTurned);
-		final SpannableString rightPanelText = new SpannableString(
-				rpStr1 + "\nSeries\n\n" + // 9
-				rpStr2 + "\nTotal Pages Turned");
-		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, rpStr1.length(), 0);
-		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 9 + rpStr1.length(), 9 + rpStr1.length() + rpStr2.length(), 0);
-		rightPanelView.setText(rightPanelText);
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_completed_right),
+			headingSize, String.valueOf(seriesCompletionMap.size()),
+			1.0f, "\nSeries\n\n",
+			headingSize, String.valueOf(totalPagesTurned),
+			1.0f, "\nTotal Pages Turned"
+		);
+
+		return view;
+	}
+
+	private View createAverageStatisticsView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
+				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_average, parent, false);
+		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
+		view.setMinimumHeight(entryHeight);
+
+		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
+		nameView.setText(tree.getName());
+
+		int temp = averageBookTimeSpent / 1000;
+		final int seconds = temp % 60; temp /= 60;
+		final int minutes = temp % 60; temp /= 60;
+		final int hours = temp;
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_average_left),
+			headingSize, String.format("%02d:%02d:%02d", hours, minutes, seconds),
+			1.0f, "\nTime Per Book",
+			smallSize, "\n(h:m:s)\n\n",
+			headingSize, String.valueOf("40"),
+			1.0f, "\nPages Per Session"
+		);
+
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_average_center),
+			headingSize, String.valueOf(averagePagesPerHour),
+			1.0f, "\nPages Per Hour\n\n"
+		);
+
+		temp = averageSeriesTimeSpent / 1000;
+		final int seriesSeconds = temp % 60; temp /= 60;
+		final int seriesMinutes = temp % 60; temp /= 60;
+		final int seriesHours = temp;
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_average_right),
+			headingSize, String.format("%02d:%02d:%02d", seriesHours, seriesMinutes, seriesSeconds),
+			1.0f, "\nTime Per Series",
+			smallSize, "\n(h:m:s)\n\n",
+			headingSize, String.valueOf("40"),
+			1.0f, "\nPages Per Session"
+		);
+
+		return view;
+	}
+
+	private View createLibraryStatisticsView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
+		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
+				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_library, parent, false);
+		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
+		view.setMinimumHeight(entryHeight);
+
+		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
+		nameView.setText(tree.getName());
+
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_left),
+			headingSize, String.valueOf(numSeriesInLibrary),
+			1.0f, "\nSeries\n\n",
+			headingSize, String.valueOf(bookmarksInLibrary.size()),
+			1.0f, "\nBookmarks"
+		);
+
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_centerL),
+			headingSize, String.valueOf(numBooksInLibrary),
+			1.0f, "\nBooks"
+		);
+
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_centerR),
+			headingSize, String.valueOf(numAuthorsInLibrary),
+			1.0f, "\nAuthors"
+		);
+
+		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_right),
+			headingSize, String.valueOf(numTagsInLibrary),
+			1.0f, "\nTags\n\n",
+			headingSize, String.valueOf(booksFavorited.size()),
+			1.0f, "\nFavorites"
+		);
 
 		return view;
 	}
@@ -387,106 +436,28 @@ public class StatisticsTree extends LibraryTree {
 		return view;
 	}
 
-	private View createAverageStatisticsView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
-		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
-				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_average, parent, false);
-		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
-		view.setMinimumHeight(entryHeight);
-
-		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
-		nameView.setText(tree.getName());
-
-		final TextView leftPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_average_left);
-		int temp = averageBookTimeSpent / 1000;
-		final int seconds = temp % 60; temp /= 60;
-		final int minutes = temp % 60; temp /= 60;
-		final int hours = temp;
-		final String lpStr1 = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-		final String lpStr2 = String.valueOf("");
-		final SpannableString leftPanelText = new SpannableString(
-				lpStr1 + "\nTime Per Book\n(h:m:s)\n\n" + // 25
-				lpStr2 + "\n");
-		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, lpStr1.length(), 0);
-		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 25 + lpStr1.length(), 25 + lpStr1.length() + lpStr2.length(), 0);
-		leftPanelView.setText(leftPanelText);
-
-		final TextView centerPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_average_center);
-		final String cpStr1 = String.valueOf(averagePagesPerHour);
-		final String cpStr2 = String.valueOf("");
-		final SpannableString centerPanelText = new SpannableString(
-				cpStr1 + "\nPages Per Hour\n\n" + // 17
-				cpStr2 + "\n");
-		centerPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, cpStr1.length(), 0);
-		centerPanelText.setSpan(new RelativeSizeSpan(headingSize), 17 + cpStr1.length(), 17 + cpStr1.length() + cpStr2.length(), 0);
-		centerPanelView.setText(centerPanelText);
-
-		final TextView rightPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_average_right);
-		temp = averageSeriesTimeSpent / 1000;
-		final int seriesSeconds = temp % 60; temp /= 60;
-		final int seriesMinutes = temp % 60; temp /= 60;
-		final int seriesHours = temp;
-		final String rpStr1 = String.format("%02d:%02d:%02d", seriesHours, seriesMinutes, seriesSeconds);
-		final String rpStr2 = String.valueOf("");
-		final SpannableString rightPanelText = new SpannableString(
-				rpStr1 + "\nTime Per Series\n(h:m:s)\n\n" + // 27
-				rpStr2 + "\n");
-		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, rpStr1.length(), 0);
-		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 27 + rpStr1.length(), 27 + rpStr1.length() + rpStr2.length(), 0);
-		rightPanelView.setText(rightPanelText);
-
-
-		return view;
-	}
-
-	private View createLibraryStatisticsView(View convertView, ViewGroup parent, LibraryTree tree, TreeActivity activity) {
-		final View view = (convertView != null && convertView.getId() == R.id.statistics_tree_id) ? convertView :
-				LayoutInflater.from(parent.getContext()).inflate(R.layout.statistics_tree_library, parent, false);
-		final int entryHeight = parent.getMeasuredHeight() / 5 - 1;
-		view.setMinimumHeight(entryHeight);
-
-		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
-		nameView.setText(tree.getName());
-
-		final TextView leftPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_left);
-		final String lpStr1 = String.valueOf(numSeriesInLibrary);
-		final String lpStr2 = String.valueOf(boomarksInLibrary.size());
-		final SpannableString leftPanelText = new SpannableString(
-				lpStr1 + "\nSeries\n\n" + // 9
-				lpStr2 + "\nBookmarks");
-		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, lpStr1.length(), 0);
-		leftPanelText.setSpan(new RelativeSizeSpan(headingSize), 9 + lpStr1.length(), 9 + lpStr1.length() + lpStr2.length(), 0);
-		leftPanelView.setText(leftPanelText);
-
-		final TextView centerPanelViewL = ViewUtil.findTextView(view, R.id.statistics_tree_centerL);
-		final String cpStrL = String.valueOf(numBooksInLibrary);
-		final SpannableString centerPanelTextL = new SpannableString(
-				cpStrL + "\n" + "Books");
-		centerPanelTextL.setSpan(new RelativeSizeSpan(headingSize), 0, cpStrL.length(), 0);
-		centerPanelViewL.setText(centerPanelTextL);
-
-		final TextView centerPanelViewR = ViewUtil.findTextView(view, R.id.statistics_tree_centerR);
-		final String cpStrR = String.valueOf(numAuthorsInLibrary);
-		final SpannableString centerPanelTextR = new SpannableString(
-				cpStrR + "\n" + "Authors");
-		centerPanelTextR.setSpan(new RelativeSizeSpan(headingSize), 0, cpStrR.length(), 0);
-		centerPanelViewR.setText(centerPanelTextR);
-
-		final TextView rightPanelView = ViewUtil.findTextView(view, R.id.statistics_tree_right);
-		final String rpStr1 = String.valueOf(numTagsInLibrary);
-		final String rpStr2 = String.valueOf(booksFavorited.size());
-		final SpannableString rightPanelText = new SpannableString(
-				rpStr1 + "\nTags\n\n" + // 7
-				rpStr2 + "\nFavorites");
-		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 0, rpStr1.length(), 0);
-		rightPanelText.setSpan(new RelativeSizeSpan(headingSize), 7 + rpStr1.length(), 7 + rpStr1.length() + rpStr2.length(), 0);
-		rightPanelView.setText(rightPanelText);
-
-		return view;
+	private void setTextViewContents(TextView tv, Object ... args) {
+		final RelativeSizeSpan[] spans = new RelativeSizeSpan[args.length/2];
+		final StringBuilder builder = new StringBuilder();
+		for(int i = 0; i < args.length; i++) {
+			if(i % 2 == 0)
+				spans[i/2] = new RelativeSizeSpan((Float)args[i]);
+			else
+				builder.append((String)args[i]);
+		}
+		final SpannableString text = new SpannableString(builder);
+		int left = 0, right;
+		for(int i = 0; i < spans.length; i++) {
+			right = left + ((String)args[2*i + 1]).length();
+			text.setSpan(spans[i], left, right, 0);
+			left = right;
+		}
+		tv.setText(text);
 	}
 
 	/*
 	@Override
-	public boolean onBookEvent(BookEvent event, Book book) {
+	private boolean onBookEvent(BookEvent event, Book book) {
 		switch (event) {
 			case Added: {
 				return true;

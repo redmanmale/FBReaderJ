@@ -35,8 +35,8 @@ public class StatisticsListTree extends FirstLevelTree {
 		// must be in this order
 		new StatisticsTree(this, StatisticsTree.Types.progress, false);
 		new StatisticsTree(this, StatisticsTree.Types.completed, false);
-		new StatisticsTree(this, StatisticsTree.Types.reading, false);
 		new StatisticsTree(this, StatisticsTree.Types.average, false);
 		new StatisticsTree(this, StatisticsTree.Types.library, false);
+		new StatisticsTree(this, StatisticsTree.Types.reading, false);
 	}
 }
