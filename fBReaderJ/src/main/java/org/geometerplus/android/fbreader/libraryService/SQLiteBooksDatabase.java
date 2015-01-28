@@ -53,11 +53,11 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 
 	SQLiteBooksDatabase(Context context) {
 		myDatabase = context.openOrCreateDatabase("books.db", Context.MODE_PRIVATE, null);
-		exportDatabase("FBReader.books.db");
+		//exportDatabase("FBReader.books.db", false);
 		migrate();
 	}
 
-	public boolean exportDatabase(String dir) {
+	public boolean exportDatabase(String dir, boolean reverse) {
 		try {
 			File dataDir = Environment.getDataDirectory();
 			File sdDir = Environment.getExternalStorageDirectory();
@@ -67,7 +67,10 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 				if (currentDB.exists()) {
 					FileChannel src = new FileInputStream(currentDB).getChannel();
 					FileChannel dst = new FileOutputStream(exportDB).getChannel();
-					dst.transferFrom(src, 0, src.size());
+					if(reverse)
+						src.transferFrom(dst, 0, dst.size());
+					else
+						dst.transferFrom(src, 0, src.size());
 					src.close();
 					dst.close();
 					return true;
@@ -361,7 +364,7 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 		}
 
 		cursor = myDatabase.rawQuery(
-			"SELECT book_id,date_added,date_opened,date_closed,pages_turned,total_time_spent " +
+			"SELECT book_id,date_added,date_opened,sessions,pages_turned,total_time_spent " +
 			"FROM BookStatistics",
 			null
 		);
@@ -374,7 +377,7 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 					cursor.getLong(0),
 					cursor.getLong(1),
 					cursor.getLong(2),
-					cursor.getLong(3),
+					cursor.getString(3),
 					(int)cursor.getLong(4),
 					(int)cursor.getLong(5))
 				);
@@ -577,7 +580,7 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 			"SELECT Labels.name FROM Labels" +
 			" INNER JOIN BookLabel ON BookLabel.label_id=Labels.label_id" +
 			" WHERE BookLabel.book_id=?",
-			new String[] { String.valueOf(bookId) }
+			new String[]{String.valueOf(bookId)}
 		);
 		final LinkedList<String> names = new LinkedList<String>();
 		while (cursor.moveToNext()) {
@@ -988,15 +991,15 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 	protected BookStatistics getBookStatistics(long bookId) {
 		BookStatistics bookStatistics;
 		Cursor cursor = myDatabase.rawQuery(
-				"SELECT book_id,date_added,date_opened,date_closed,pages_turned,total_time_spent FROM" +
-						" BookStatistics WHERE book_id = " + bookId, null
+				"SELECT book_id,date_added,date_opened,sessions,pages_turned,total_time_spent FROM" +
+				" BookStatistics WHERE book_id = " + bookId, null
 		);
 		if(cursor.moveToNext()) {
 			bookStatistics = new BookStatistics(
 					cursor.getLong(0),			// book_id
 					cursor.getLong(1),			// date_added
 					cursor.getLong(2),			// date_opened
-					cursor.getLong(3),			// date_closed
+					cursor.getString(3),		// sessions
 					(int)cursor.getLong(4),		// pages_turned
 					(int)cursor.getLong(5));	// total_time_spent
 		} else {
@@ -1009,15 +1012,16 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 
 	@Override
 	protected void saveBookStatistics(BookStatistics bookStatistics) {
+		Log.d("checkSAVE", "saveBookStatistics");
 		final SQLiteStatement statement = get(
 				"INSERT OR REPLACE INTO BookStatistics " +
-				"(book_id,date_added,date_opened,date_closed,pages_turned,total_time_spent) " +
+				"(book_id,date_added,date_opened,sessions,pages_turned,total_time_spent) " +
 				"VALUES (?,?,?,?,?,?)"
 		);
 		statement.bindLong(1, bookStatistics.getBookID());
 		statement.bindLong(2, bookStatistics.getDateAdded());
 		statement.bindLong(3, bookStatistics.getDateOpened());
-		statement.bindLong(4, bookStatistics.getDateClosed());
+		statement.bindString(4, bookStatistics.getSesssions());
 		statement.bindLong(5, bookStatistics.getPagesTurned());
 		statement.bindLong(6, bookStatistics.getTotalTimeSpent());
 		statement.execute();
@@ -1609,7 +1613,7 @@ final class SQLiteBooksDatabase extends BooksDatabase {
 				"book_id INTEGER PRIMARY KEY REFERENCES Books(book_id)," +
 				"date_added INTEGER NOT NULL DEFAULT -1," +
 				"date_opened INTEGER," +
-				"date_closed INTEGER," +
+				"sessions TEXT(350)," +
 				"pages_turned INTEGER," +
 				"total_time_spent INTEGER)");
 		Cursor cursor = myDatabase.rawQuery("SELECT * FROM BookStatistics", null);

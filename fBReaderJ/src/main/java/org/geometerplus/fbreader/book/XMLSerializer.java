@@ -259,7 +259,7 @@ class XMLSerializer extends AbstractSerializer {
 				" progress: " + (progress == null ? "0" : "1"));
 
 		closeTag(buffer, "entry");
-		Log.d("check5", "serialize - checkXML: " + buffer.toString());
+		Log.d("check5", "serialize - checkXML:\n" + buffer.toString());
 	}
 
 	@Override
@@ -349,8 +349,8 @@ class XMLSerializer extends AbstractSerializer {
 		appendTag(buffer, "bookstatistics", true,
 				"book_id", String.valueOf(bookStatistics.getBookID()),
 				"date_added", String.valueOf(bookStatistics.getDateAdded()),
-				"date_closed", String.valueOf(bookStatistics.getDateClosed()),
 				"date_opened", String.valueOf(bookStatistics.getDateOpened()),
+				"sessions", bookStatistics.getSesssions(),
 				"pages_turned", String.valueOf(bookStatistics.getPagesTurned()),
 				"total_time_spent", String.valueOf(bookStatistics.getTotalTimeSpent())
 		);
@@ -1102,7 +1102,7 @@ class XMLSerializer extends AbstractSerializer {
 		private long myBookID;
 		private long myDateAdded;
 		private long myDateOpened;
-		private long myDateClosed;
+		private String mySessions;
 		private int myPagesTurned;
 		private int myTotalTimeSpent;
 		private BookStatistics myBookStatistics;
@@ -1123,7 +1123,7 @@ class XMLSerializer extends AbstractSerializer {
 				myBookID,
 				myDateAdded,
 				myDateOpened,
-				myDateClosed,
+				mySessions,
 				myPagesTurned,
 				myTotalTimeSpent
 			);
@@ -1135,7 +1135,7 @@ class XMLSerializer extends AbstractSerializer {
 				myBookID = parseLong(attributes.getValue("book_id"));
 				myDateAdded = parseLong(attributes.getValue("date_added"));
 				myDateOpened = parseLong(attributes.getValue("date_opened"));
-				myDateClosed = parseLong(attributes.getValue("date_closed"));
+				mySessions = attributes.getValue("sessions");
 				myPagesTurned = parseInt(attributes.getValue("pages_turned"));
 				myTotalTimeSpent = parseInt(attributes.getValue("total_time_spent"));
 			}

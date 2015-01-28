@@ -45,7 +45,6 @@
 		android:layout_marginTop="-20dp"
 		android:layout_below="@+id/statistics_tree_item_name"
 		android:layout_alignParentRight="true"
-		android:layout_alignBottom="@+id/statistics_tree_average_left"
 		android:minWidth="105dp"/>
 
 </RelativeLayout>

@@ -78,6 +78,8 @@ public class StatisticsTree extends LibraryTree {
 	private static int averageBookTimeSpent;
 	private static int averageSeriesTimeSpent;
 	private static int averagePagesPerHour;
+	private static int averagePagesPerSession;
+	private static int averageSessionDurationSeconds;
 	// library
 	private final static Filter booksFavoritedFilter = new Filter.ByLabel(Book.FAVORITE_LABEL);
 	private static List<Book> booksFavorited;
@@ -180,10 +182,25 @@ public class StatisticsTree extends LibraryTree {
 			} case average: {
 				averageBookTimeSpent = 0;
 				averagePagesPerHour = 0;
+				averagePagesPerSession = 0;
+				averageSessionDurationSeconds = 0;
 				for (Book book : booksReading) {
-					averageBookTimeSpent += book.getStatistics().getTotalTimeSpent();
-					averagePagesPerHour += book.getStatistics().getPagesTurned();
+					final BookStatistics bookStatistics = book.getStatistics();
+					averageBookTimeSpent += bookStatistics.getTotalTimeSpent();
+					averagePagesPerHour += bookStatistics.getPagesTurned();
+					averagePagesPerSession += bookStatistics.getNumberOfSessions();
+					final Map<Long, Integer> sessions = bookStatistics.getProcessedSessions();
+					if(sessions == null) continue;
+					int currBookAverageSession = 0;
+					for(int sessionLength : sessions.values()) {
+						Log.d("check4", "" + sessionLength);
+						currBookAverageSession += sessionLength;
+					}
+					averageSessionDurationSeconds += currBookAverageSession / sessions.values().size();
 				}
+				averageSessionDurationSeconds /= booksReading.size() < 1 ? 1 : booksReading.size();
+				// order matters for this calculation; careful
+				averagePagesPerSession = averagePagesPerHour / averagePagesPerSession;
 				final int hours = averageBookTimeSpent / (1000 * 60 * 60);
 				averagePagesPerHour /= hours < 1 ? 1 : hours;
 				averageBookTimeSpent /= booksReading.size() < 1 ? 1 : booksReading.size();
@@ -358,33 +375,38 @@ public class StatisticsTree extends LibraryTree {
 		final TextView nameView = ViewUtil.findTextView(view, R.id.statistics_tree_item_name);
 		nameView.setText(tree.getName());
 
-		int temp = averageBookTimeSpent / 1000;
-		final int seconds = temp % 60; temp /= 60;
-		final int minutes = temp % 60; temp /= 60;
-		final int hours = temp;
+		int temp = averageSessionDurationSeconds;
+		int seconds = temp % 60; temp /= 60;
+		int minutes = temp % 60; temp /= 60;
+		int hours = temp;
 		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_average_left),
 			headingSize, String.format("%02d:%02d:%02d", hours, minutes, seconds),
-			1.0f, "\nTime Per Book",
+			1.0f, "\nTime Per Session",
 			smallSize, "\n(h:m:s)\n\n",
-			headingSize, String.valueOf("40"),
+			headingSize, String.valueOf(averagePagesPerSession),
 			1.0f, "\nPages Per Session"
 		);
 
+		temp = averageBookTimeSpent / 1000;
+		seconds = temp % 60; temp /= 60;
+		minutes = temp % 60; temp /= 60;
+		hours = temp;
 		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_average_center),
-			headingSize, String.valueOf(averagePagesPerHour),
-			1.0f, "\nPages Per Hour\n\n"
+			headingSize, String.format("%02d:%02d:%02d", hours, minutes, seconds),
+			1.0f, "\nTime Per Book",
+			smallSize, "\n(h:m:s)\n\n"
 		);
 
 		temp = averageSeriesTimeSpent / 1000;
-		final int seriesSeconds = temp % 60; temp /= 60;
-		final int seriesMinutes = temp % 60; temp /= 60;
-		final int seriesHours = temp;
+		seconds = temp % 60; temp /= 60;
+		minutes = temp % 60; temp /= 60;
+		hours = temp;
 		setTextViewContents(ViewUtil.findTextView(view, R.id.statistics_tree_average_right),
-			headingSize, String.format("%02d:%02d:%02d", seriesHours, seriesMinutes, seriesSeconds),
+			headingSize, String.format("%02d:%02d:%02d", hours, minutes, seconds),
 			1.0f, "\nTime Per Series",
 			smallSize, "\n(h:m:s)\n\n",
-			headingSize, String.valueOf("40"),
-			1.0f, "\nPages Per Session"
+			headingSize, String.valueOf(averagePagesPerHour),
+			1.0f, "\nPages Per Hour"
 		);
 
 		return view;
