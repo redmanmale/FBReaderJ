@@ -30,8 +30,6 @@ public interface ActionCode {
 	String SWITCH_TO_NIGHT_PROFILE = "night";
 	String SWITCH_TO_DAY_PROFILE = "day";
 
-	String SHARE_BOOK = "shareBook";
-
 	String SEARCH = "search";
 	String FIND_PREVIOUS = "findPrevious";
 	String FIND_NEXT = "findNext";

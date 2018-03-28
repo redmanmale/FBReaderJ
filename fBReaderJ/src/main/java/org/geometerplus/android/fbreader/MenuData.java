@@ -41,7 +41,6 @@ public abstract class MenuData {
 			ourNodes.add(new MenuNode.Item(ActionCode.SWITCH_TO_NIGHT_PROFILE, R.drawable.ic_menu_night));
 			ourNodes.add(new MenuNode.Item(ActionCode.SWITCH_TO_DAY_PROFILE, R.drawable.ic_menu_day));
 			ourNodes.add(new MenuNode.Item(ActionCode.SEARCH, R.drawable.ic_menu_search));
-			ourNodes.add(new MenuNode.Item(ActionCode.SHARE_BOOK));
 			ourNodes.add(new MenuNode.Item(ActionCode.SHOW_PREFERENCES));
 			ourNodes.add(new MenuNode.Item(ActionCode.SHOW_BOOK_INFO));
 			final MenuNode.Submenu orientations = new MenuNode.Submenu("screenOrientation");
