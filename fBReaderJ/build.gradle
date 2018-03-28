@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "org.geometerplus.zlibrary.ui.android"
-        minSdkVersion 5
+        minSdkVersion 7
         targetSdkVersion 9
 
         ndk {
@@ -38,7 +38,7 @@ android {
 
 dependencies {
     implementation 'com.android.support:support-v4:21.0.3'
-    implementation project(':ambilWarna')
+    implementation 'com.github.yukuku:ambilwarna:2.0.1'
     implementation project(':library')
     implementation project(':code')
     implementation files('libs/httpmime-4.2.5.jar')

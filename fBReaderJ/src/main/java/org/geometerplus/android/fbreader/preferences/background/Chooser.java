@@ -80,9 +80,7 @@ public class Chooser extends ListActivity implements AdapterView.OnItemClickList
 				new AmbilWarnaDialog(
 					this,
 					getIntent().getIntExtra(BackgroundPreference.COLOR_KEY, 0),
-					myColorChooserListener,
-					buttonResource.getResource("ok").getValue(),
-					buttonResource.getResource("cancel").getValue()
+					myColorChooserListener
 				).show();
 				break;
 			}

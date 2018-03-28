@@ -71,9 +71,7 @@ public abstract class ColorPreference extends Preference {
 				@Override
 				public void onCancel(AmbilWarnaDialog dialog) {
 				}
-			},
-			buttonResource.getResource("ok").getValue(),
-			buttonResource.getResource("cancel").getValue()
+			}
 		).show();
 	}
 }

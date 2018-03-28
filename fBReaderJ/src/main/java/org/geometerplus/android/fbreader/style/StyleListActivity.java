@@ -146,10 +146,10 @@ public class StyleListActivity extends ListActivity implements IBookCollection.L
 
 				colorView.setVisibility(View.VISIBLE);
 				if (rgb != -1) {
-					colorView.showCross(false);
+					//colorView.showCross(false);
 					colorView.setBackgroundColor(rgb);
 				} else {
-					colorView.showCross(true);
+					//colorView.showCross(true);
 					colorView.setBackgroundColor(0);
 				}
 				titleView.setText(name);
