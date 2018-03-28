@@ -1,2 +1,2 @@
-include ':code'
+include ':fileChooser'
 include ':fBReaderJ'
