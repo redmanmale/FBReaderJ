@@ -1,3 +1,2 @@
 include ':code'
-include ':library'
 include ':fBReaderJ'
