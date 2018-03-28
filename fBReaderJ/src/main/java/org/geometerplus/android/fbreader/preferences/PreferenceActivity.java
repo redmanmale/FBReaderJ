@@ -19,40 +19,42 @@
 
 package org.geometerplus.android.fbreader.preferences;
 
-import java.text.DecimalFormatSymbols;
-import java.util.*;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.view.KeyEvent;
 
-import org.geometerplus.zlibrary.core.application.ZLKeyBindings;
-import org.geometerplus.zlibrary.core.network.ZLNetworkException;
-import org.geometerplus.zlibrary.core.network.JsonRequest;
-import org.geometerplus.zlibrary.core.options.*;
-import org.geometerplus.zlibrary.core.resources.ZLResource;
-
-import org.geometerplus.zlibrary.text.view.style.*;
-
-import org.geometerplus.zlibrary.ui.android.library.ZLAndroidLibrary;
-import org.geometerplus.zlibrary.ui.android.view.ZLAndroidPaintContext;
-
-import org.geometerplus.fbreader.Paths;
-import org.geometerplus.fbreader.fbreader.*;
-import org.geometerplus.fbreader.fbreader.options.*;
-import org.geometerplus.fbreader.network.sync.SyncData;
-import org.geometerplus.fbreader.network.sync.SyncUtil;
-import org.geometerplus.fbreader.tips.TipsManager;
-
 import org.geometerplus.android.fbreader.FBReader;
 import org.geometerplus.android.fbreader.libraryService.BookCollectionShadow;
 import org.geometerplus.android.fbreader.network.auth.ActivityNetworkContext;
-import org.geometerplus.android.fbreader.preferences.fileChooser.FileChooserCollection;
 import org.geometerplus.android.fbreader.preferences.background.BackgroundPreference;
-import org.geometerplus.android.fbreader.sync.SyncOperations;
-
-import org.geometerplus.android.util.UIUtil;
+import org.geometerplus.android.fbreader.preferences.fileChooser.FileChooserCollection;
 import org.geometerplus.android.util.DeviceType;
+import org.geometerplus.fbreader.Paths;
+import org.geometerplus.fbreader.fbreader.ActionCode;
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
+import org.geometerplus.fbreader.fbreader.FBView;
+import org.geometerplus.fbreader.fbreader.options.CancelMenuHelper;
+import org.geometerplus.fbreader.fbreader.options.ColorProfile;
+import org.geometerplus.fbreader.fbreader.options.EInkOptions;
+import org.geometerplus.fbreader.fbreader.options.FooterOptions;
+import org.geometerplus.fbreader.fbreader.options.ImageOptions;
+import org.geometerplus.fbreader.fbreader.options.MiscOptions;
+import org.geometerplus.fbreader.fbreader.options.PageTurningOptions;
+import org.geometerplus.fbreader.fbreader.options.SyncOptions;
+import org.geometerplus.fbreader.fbreader.options.ViewOptions;
+import org.geometerplus.zlibrary.core.application.ZLKeyBindings;
+import org.geometerplus.zlibrary.core.options.Config;
+import org.geometerplus.zlibrary.core.options.ZLIntegerRangeOption;
+import org.geometerplus.zlibrary.core.options.ZLStringOption;
+import org.geometerplus.zlibrary.core.resources.ZLResource;
+import org.geometerplus.zlibrary.text.view.style.ZLTextBaseStyle;
+import org.geometerplus.zlibrary.text.view.style.ZLTextNGStyleDescription;
+import org.geometerplus.zlibrary.text.view.style.ZLTextStyleCollection;
+import org.geometerplus.zlibrary.ui.android.library.ZLAndroidLibrary;
+import org.geometerplus.zlibrary.ui.android.view.ZLAndroidPaintContext;
+
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 public class PreferenceActivity extends ZLPreferenceActivity {
 	private final ActivityNetworkContext myNetworkContext = new ActivityNetworkContext(this);
@@ -591,10 +593,6 @@ public class PreferenceActivity extends ZLPreferenceActivity {
 			androidLibrary.getFullVersionName()
 		));
 		aboutScreen.addPreference(new UrlPreference(this, aboutScreen.Resource, "site"));
-		aboutScreen.addPreference(new UrlPreference(this, aboutScreen.Resource, "email"));
-		aboutScreen.addPreference(new UrlPreference(this, aboutScreen.Resource, "googleplus"));
-		aboutScreen.addPreference(new UrlPreference(this, aboutScreen.Resource, "twitter"));
-		aboutScreen.addPreference(new UrlPreference(this, aboutScreen.Resource, "facebook"));
 		aboutScreen.addPreference(new ThirdPartyLibrariesPreference(this, aboutScreen.Resource, "thirdParty"));
 	}
 }
