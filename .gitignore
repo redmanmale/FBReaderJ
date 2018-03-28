@@ -24,7 +24,7 @@ READY/
 *.iws
 *.ipr
 .gradle/
-*/build/
+build/
 
 # FBReader help books
 intro/
