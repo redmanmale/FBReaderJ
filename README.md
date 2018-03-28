@@ -18,7 +18,7 @@ NDK: 16.1.4479499
 
 1. Perform a project level gradle sync (CTR+SHIFT+A and search for "project sync", double click the first result). You may need to repeat it many times because of download failures. Android Studio may complain about not finding a git.exe in your path, but this will not prevent you from building the project.
 
-1. Install Android SDK Platform API 5, 11 and 14 when prompted
+1. Install Android SDK Platform API 9 and 14 when prompted
 
 1. FBReader has now been successfully built using Android Studio, but is missing the necessary binaries (.so)
 
