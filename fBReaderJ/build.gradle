@@ -42,10 +42,9 @@ dependencies {
     implementation 'asia.ivity.android:drag-sort-listview:1.0'
     implementation project(':fileChooser')
     implementation 'org.apache.httpcomponents:httpmime:4.2.5'
+    implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation files('libs/json-simple-1.1.1.jar')
     implementation files('libs/LingvoIntegration_2.5.2.12.jar')
-    implementation files('libs/nanohttpd-2.0.5.jar')
-    implementation files('libs/open-dictionary-api-1.2.1.jar')
     implementation files('libs/pdfparse.jar')
 }
 
