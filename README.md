@@ -22,17 +22,7 @@ NDK: 16.1.4479499
 
 1. FBReader has now been successfully built using Android Studio, but is missing the necessary binaries (.so)
 
-## Compiling native binaries
-
-1. To compile the binaries from the source, navigate to where you extracted the NDK
-
-1. Execute the following command in your shell:
-
-    ```
-    ndk-build -C FBReaderJ/fBReaderJ/src/main/jni
-    ```
-
-    The binaries should be automatically placed into the appropriate directories (`FBReaderJ/fBReaderJ/src/main/lib`)
+1. Build native binaries by calling ndk-build(.cmd) script. If it's not work you should check the NDK folder and set its path to the script
 
 1. Finally, rebuild the project. FBReader should now run without issue on the emulator/on your device.
 

@@ -48,18 +48,3 @@ dependencies {
     implementation 'com.github.axet:pdfparse-lib:1.0'
     implementation 'com.googlecode.json-simple:json-simple:1.1'
 }
-
-/*
-// call regular ndk-build(.cmd) script from app directory
-task ndkBuild(type: Exec) {
-    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-        commandLine 'ndk-build.cmd', '-C', file('src/main/jni').absolutePath
-    } else {
-        commandLine 'ndk-build', '-C', file('src/main/jni').absolutePath
-    }
-}
-
-tasks.withType(JavaCompile) {
-    compileTask -> compileTask.dependsOn ndkBuild
-}
-*/
