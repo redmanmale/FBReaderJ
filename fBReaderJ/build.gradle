@@ -42,7 +42,6 @@ dependencies {
     implementation project(':fileChooser')
     implementation 'com.android.support:support-v4:21.0.3'
     implementation 'com.github.yukuku:ambilwarna:2.0.1'
-    implementation 'asia.ivity.android:drag-sort-listview:1.0'
     implementation 'org.apache.httpcomponents:httpmime:4.5.5'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
     implementation 'com.github.axet:pdfparse-lib:1.0'

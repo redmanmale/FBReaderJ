@@ -19,23 +19,28 @@
 
 package org.geometerplus.android.fbreader.network;
 
-import java.util.*;
-
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.*;
-import android.widget.*;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.ListView;
 
-import com.mobeta.android.dslv.DragSortListView;
-
-import org.geometerplus.zlibrary.ui.android.R;
-import org.geometerplus.fbreader.network.*;
-import org.geometerplus.android.fbreader.FBReader;
 import org.geometerplus.android.fbreader.covers.CoverManager;
-
-import org.geometerplus.android.util.ViewUtil;
 import org.geometerplus.android.fbreader.util.AndroidImageSynchronizer;
+import org.geometerplus.android.util.ViewUtil;
+import org.geometerplus.fbreader.network.INetworkLink;
+import org.geometerplus.fbreader.network.NetworkLibrary;
+import org.geometerplus.fbreader.network.NetworkTree;
+import org.geometerplus.zlibrary.ui.android.R;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.TreeSet;
 
 public class CatalogManagerActivity extends ListActivity {
 	private final AndroidImageSynchronizer myImageSynchronizer = new AndroidImageSynchronizer(this);
@@ -97,8 +102,8 @@ public class CatalogManagerActivity extends ListActivity {
 	}
 
 	@Override
-	public DragSortListView getListView() {
-		return (DragSortListView)super.getListView();
+	public ListView getListView() {
+		return super.getListView();
 	}
 
 	private static interface Item {
@@ -137,21 +142,11 @@ public class CatalogManagerActivity extends ListActivity {
 		}
 	}
 
-	private class CatalogsListAdapter extends ArrayAdapter<Item> implements DragSortListView.DropListener, DragSortListView.RemoveListener {
+	private class CatalogsListAdapter extends ArrayAdapter<Item> {
 		private CoverManager myCoverManager;
 
 		public CatalogsListAdapter() {
 			super(CatalogManagerActivity.this, R.layout.catalog_manager_item, myAllItems);
-		}
-
-		private int indexOfDisabledSectionItem() {
-			for (int i = 1; i < getCount(); i++) {
-				if (getItem(i) instanceof SectionItem) {
-					return i;
-				}
-			}
-			// should be impossible
-			return 0;
 		}
 
 		private void setResultIds() {
@@ -218,31 +213,6 @@ public class CatalogManagerActivity extends ListActivity {
 				});
 			}
 			return view;
-		}
-
-		// method from DragSortListView.DropListener
-		public void drop(int from, int to) {
-			to = Math.max(to, 1);
-			if (from == to) {
-				return;
-			}
-			final Item item = getItem(from);
-			if (item instanceof CatalogItem) {
-				remove(item);
-				insert(item, to);
-				((CatalogItem)item).IsChecked = to < indexOfDisabledSectionItem();
-				getListView().moveCheckState(from, to);
-				setResultIds();
-			}
-		}
-
-		// method from DragSortListView.RemoveListener
-		public void remove(int which) {
-			final Item item = getItem(which);
-			if (item instanceof CatalogItem) {
-				remove(item);
-				getListView().removeCheckState(which);
-			}
 		}
 	}
 }
